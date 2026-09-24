@@ -215,6 +215,15 @@ export function setOrderStatus(id: string, status: OrderStatus) {
   });
 }
 
+export function assignRider(id: string, rider: string) {
+  set({
+    ...state,
+    orders: state.orders.map((o) =>
+      o.id === id ? { ...o, rider, status: "out_for_delivery" as OrderStatus } : o,
+    ),
+  });
+}
+
 export function upsertProduct(product: Product) {
   const exists = state.products.some((x) => x.id === product.id);
   set({
