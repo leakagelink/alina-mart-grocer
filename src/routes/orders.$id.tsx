@@ -56,7 +56,7 @@ function TrackOrder() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-10 pt-4">
-        <div className="rounded-2xl brand-gradient p-4 text-primary-foreground">
+        <div className="animate-fade-up rounded-2xl brand-gradient p-4 text-primary-foreground">
           <p className="text-xs opacity-90">Order #{order.id}</p>
           <p className="mt-1 text-lg font-extrabold">
             {order.status === "delivered" ? "Delivered 🎉" : "Arriving in 15 minutes"}
@@ -72,8 +72,8 @@ function TrackOrder() {
               <div key={step.key} className="flex gap-3">
                 <div className="flex flex-col items-center">
                   <span
-                    className={`grid h-9 w-9 place-items-center rounded-full ${
-                      done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${
+                      done ? "animate-pop bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                     }`}
                   >
                     <Icon className="h-4 w-4" />

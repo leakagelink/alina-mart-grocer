@@ -68,11 +68,15 @@ function CartPage() {
         ) : (
           <>
             <div className="mt-4 space-y-3">
-              {state.cart.map((line) => {
+              {state.cart.map((line, i) => {
                 const p = state.products.find((x) => x.id === line.productId);
                 if (!p) return null;
                 return (
-                  <div key={p.id} className="flex items-center gap-3 rounded-2xl border bg-card p-3">
+                  <div
+                    key={p.id}
+                    className="animate-card-in flex items-center gap-3 rounded-2xl border bg-card p-3"
+                    style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
+                  >
                     <span className="grid h-14 w-14 place-items-center rounded-xl bg-surface text-3xl">
                       {p.emoji}
                     </span>

@@ -1,14 +1,17 @@
 import { Minus, Plus } from "lucide-react";
 import { addToCart, inr, removeOne, useStore, type Product } from "@/lib/store";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const state = useStore();
   const qty = state.cart.find((c) => c.productId === product.id)?.qty ?? 0;
   const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
   const out = product.stock <= 0;
 
   return (
-    <div className="flex flex-col rounded-2xl border bg-card p-3">
+    <div
+      className="animate-card-in flex flex-col rounded-2xl border bg-card p-3 transition-shadow hover:shadow-lg"
+      style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
+    >
       <div className="relative grid h-24 place-items-center rounded-xl bg-surface text-5xl">
         <span>{product.emoji}</span>
         {off > 0 && (
@@ -33,12 +36,12 @@ export function ProductCard({ product }: { product: Product }) {
         ) : qty === 0 ? (
           <button
             onClick={() => addToCart(product.id)}
-            className="rounded-lg border border-primary px-3 py-1.5 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+            className="rounded-lg border border-primary px-3 py-1.5 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground active:scale-90"
           >
             ADD
           </button>
         ) : (
-          <div className="flex items-center gap-2 rounded-lg bg-primary px-2 py-1 text-primary-foreground">
+          <div className="animate-pop flex items-center gap-2 rounded-lg bg-primary px-2 py-1 text-primary-foreground">
             <button onClick={() => removeOne(product.id)} aria-label="Remove one">
               <Minus className="h-4 w-4" />
             </button>

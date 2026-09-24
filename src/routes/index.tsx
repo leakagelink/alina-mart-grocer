@@ -51,7 +51,7 @@ function Home() {
       <Header query={query} onQuery={setQuery} />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-4">
-        <section className="flex items-center gap-4 rounded-2xl bg-accent p-4">
+        <section className="animate-fade-up flex items-center gap-4 rounded-2xl bg-accent p-4">
           <div>
             <p className="flex items-center gap-1 text-sm font-bold text-accent-foreground">
               <Zap className="h-4 w-4" /> Superfast delivery
@@ -93,8 +93,8 @@ function Home() {
           {cat ? CATEGORIES.find((c) => c.id === cat)?.name : "All products"}
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {products.map((p, i) => (
+            <ProductCard key={p.id} product={p} index={i} />
           ))}
         </div>
         {products.length === 0 && (
@@ -107,7 +107,7 @@ function Home() {
       {count > 0 && (
         <Link
           to="/cart"
-          className="fixed bottom-20 left-1/2 z-40 w-[92%] max-w-md -translate-x-1/2 rounded-xl bg-primary px-4 py-3 text-primary-foreground shadow-lg"
+          className="animate-pop fixed bottom-20 left-1/2 z-40 w-[92%] max-w-md -translate-x-1/2 rounded-xl bg-primary px-4 py-3 text-primary-foreground shadow-lg"
         >
           <div className="flex items-center justify-between text-sm font-bold">
             <span>

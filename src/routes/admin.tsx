@@ -119,8 +119,12 @@ function Admin() {
                 Abhi koi order nahi aaya.
               </p>
             )}
-            {state.orders.map((o) => (
-              <div key={o.id} className="rounded-2xl border bg-card p-4">
+            {state.orders.map((o, i) => (
+              <div
+                key={o.id}
+                className="animate-card-in rounded-2xl border bg-card p-4"
+                style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
+              >
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-bold">#{o.id}</span>
                   <span className="rounded-lg bg-accent px-2 py-1 text-xs font-bold text-accent-foreground">
@@ -291,7 +295,7 @@ function Stat({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border bg-card p-3">
+    <div className="animate-card-in rounded-2xl border bg-card p-3">
       <Icon className="h-4 w-4 text-primary" />
       <p className="mt-2 text-lg font-extrabold">{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>

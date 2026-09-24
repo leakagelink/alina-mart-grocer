@@ -35,12 +35,13 @@ function Orders() {
           </p>
         ) : (
           <div className="mt-4 space-y-3">
-            {state.orders.map((o) => (
+            {state.orders.map((o, i) => (
               <Link
                 key={o.id}
                 to="/orders/$id"
                 params={{ id: o.id }}
-                className="block rounded-2xl border bg-card p-4"
+                className="animate-card-in block rounded-2xl border bg-card p-4 transition-shadow hover:shadow-lg"
+                style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold">#{o.id}</span>
