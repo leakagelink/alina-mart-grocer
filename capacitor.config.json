@@ -1,0 +1,12 @@
+{
+  "appId": "com.alinamart.customer",
+  "appName": "Alina Mart",
+  "webDir": "www",
+  "server": {
+    "url": "https://alina-mart-grocer.lovable.app",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
