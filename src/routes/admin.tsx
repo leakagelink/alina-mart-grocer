@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { IndianRupee, PackageCheck, ShoppingBag, TriangleAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -89,7 +89,15 @@ function Admin() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-10 pt-4">
-        <h1 className="text-lg font-bold">Admin panel</h1>
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-lg font-bold">Admin panel</h1>
+          <Link
+            to="/delivery"
+            className="rounded-xl bg-secondary px-3 py-2 text-xs font-bold text-secondary-foreground"
+          >
+            Delivery partner view
+          </Link>
+        </div>
 
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat icon={ShoppingBag} label="Orders" value={String(stats.orders)} />
