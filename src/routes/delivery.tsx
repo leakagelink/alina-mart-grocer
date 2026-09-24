@@ -112,7 +112,7 @@ function Login({ onLogin }: { onLogin: (r: Rider) => void }) {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const r = RIDERS.find((x) => x.phone === phone.trim() && x.pin === pin.trim());
-    if (!r) return toast.error("Galat phone ya PIN");
+    if (!r) { toast.error("Galat phone ya PIN"); return; }
     toast.success(`Welcome ${r.name}!`);
     onLogin(r);
   };
@@ -364,8 +364,8 @@ function OtpDialog({ order, onClose }: { order: Order; onClose: () => void }) {
   const [otp, setOtp] = useState("");
   const [cash, setCash] = useState(order.payment !== "cod");
   const confirm = () => {
-    if (otp !== otpFor(order)) return toast.error("OTP galat hai");
-    if (!cash) return toast.error("Pehle cash collect confirm karein");
+    if (otp !== otpFor(order)) { toast.error("OTP galat hai"); return; }
+    if (!cash) { toast.error("Pehle cash collect confirm karein"); return; }
     setOrderStatus(order.id, "delivered");
     beep();
     toast.success(`#${order.id} delivered • +${inr(PER_DELIVERY)} kamaye`);
