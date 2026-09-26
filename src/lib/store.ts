@@ -25,12 +25,20 @@ export type Order = {
   status: OrderStatus;
   customer: { name: string; phone: string; address: string };
   rider: string;
+  note?: string;
+  photo?: string;
+  returnReason?: string;
 };
+
+export type CashDeposit = { id: string; rider: string; amount: number; at: number };
+export type Payout = { id: string; rider: string; amount: number; at: number; status: "pending" | "paid" };
 
 export type State = {
   products: Product[];
   cart: CartItem[];
   orders: Order[];
+  cashDeposits: CashDeposit[];
+  payouts: Payout[];
 };
 
 export const CATEGORIES = [
@@ -82,7 +90,7 @@ const DEFAULT_PRODUCTS: Product[] = [
 
 const KEY = "alina-mart-v1";
 
-let state: State = { products: DEFAULT_PRODUCTS, cart: [], orders: [] };
+let state: State = { products: DEFAULT_PRODUCTS, cart: [], orders: [], cashDeposits: [], payouts: [] };
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -109,7 +117,7 @@ export function hydrate() {
     if (!raw) return;
     const parsed = JSON.parse(raw) as State;
     if (parsed?.products?.length) {
-      state = { products: parsed.products, cart: parsed.cart ?? [], orders: parsed.orders ?? [] };
+      state = { products: parsed.products, cart: parsed.cart ?? [], orders: parsed.orders ?? [], cashDeposits: parsed.cashDeposits ?? [], payouts: parsed.payouts ?? [] };
       emit();
     }
   } catch {
@@ -180,6 +188,7 @@ export function cartCount(s: State) {
 export function placeOrder(input: {
   customer: { name: string; phone: string; address: string };
   payment: "cod" | "online";
+  note?: string;
 }): Order | null {
   if (state.cart.length === 0) return null;
   const subtotal = cartSubtotal(state);
@@ -197,6 +206,7 @@ export function placeOrder(input: {
     status: "placed",
     customer: input.customer,
     rider: "Ravi Kumar",
+    note: input.note?.trim() || undefined,
   };
   const products = state.products.map((prod) => {
     const line = state.cart.find((c) => c.productId === prod.id);
@@ -222,6 +232,34 @@ export function assignRider(id: string, rider: string) {
       o.id === id ? { ...o, rider, status: "out_for_delivery" as OrderStatus } : o,
     ),
   });
+}
+
+export function setOrderProof(id: string, photo: string) {
+  set({
+    ...state,
+    orders: state.orders.map((o) => (o.id === id ? { ...o, photo } : o)),
+  });
+}
+
+export function returnOrder(id: string, reason: string) {
+  set({
+    ...state,
+    orders: state.orders.map((o) =>
+      o.id === id ? { ...o, status: "packed" as OrderStatus, returnReason: reason } : o,
+    ),
+  });
+}
+
+export function depositCash(rider: string, amount: number): CashDeposit {
+  const d: CashDeposit = { id: "CD" + Date.now().toString().slice(-8), rider, amount, at: Date.now() };
+  set({ ...state, cashDeposits: [d, ...state.cashDeposits] });
+  return d;
+}
+
+export function requestPayout(rider: string, amount: number): Payout {
+  const p: Payout = { id: "PO" + Date.now().toString().slice(-8), rider, amount, at: Date.now(), status: "pending" };
+  set({ ...state, payouts: [p, ...state.payouts] });
+  return p;
 }
 
 export function upsertProduct(product: Product) {
