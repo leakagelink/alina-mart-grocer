@@ -37,7 +37,7 @@ const STATUSES: OrderStatus[] = ["placed", "packed", "out_for_delivery", "delive
 
 function Admin() {
   const state = useStore();
-  const [tab, setTab] = useState<"orders" | "products">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "riders">("orders");
   const [form, setForm] = useState({
     name: "",
     category: "fruits",
@@ -107,7 +107,7 @@ function Admin() {
         </div>
 
         <div className="mt-5 flex gap-2">
-          {(["orders", "products"] as const).map((t) => (
+          {(["orders", "products", "riders"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -115,12 +115,14 @@ function Admin() {
                 tab === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}
             >
-              {t}
+              {t === "riders" ? "Riders / KYC" : t}
             </button>
           ))}
         </div>
 
-        {tab === "orders" ? (
+        {tab === "riders" ? (
+          <RidersKyc />
+        ) : tab === "orders" ? (
           <div className="mt-4 space-y-3">
             {state.orders.length === 0 && (
               <p className="py-10 text-center text-sm text-muted-foreground">
