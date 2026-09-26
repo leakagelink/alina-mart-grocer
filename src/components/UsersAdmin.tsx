@@ -50,7 +50,7 @@ export function UsersAdmin() {
 
       <div className="mt-3 space-y-2">
         {list.map((a) => {
-          const orders = store.orders.filter((o) => o.phone === a.phone).length;
+          const orders = store.orders.filter((o) => o.customer.phone === a.phone).length;
           const isMe = a.id === me?.id;
           return (
             <div key={a.id} className="animate-card-in rounded-2xl border bg-card p-3">
