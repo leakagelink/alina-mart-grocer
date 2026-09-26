@@ -96,7 +96,7 @@ function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name:
     } catch (e) { toast.error((e as Error).message); }
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!f.fullName.trim() || !f.dob || f.address.trim().length < 10) return toast.error("Naam, DOB aur poora address daaliye");
     if (!/^\d{12}$/.test(f.aadhaar)) return toast.error("Aadhaar 12 digit ka hona chahiye");
