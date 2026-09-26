@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/BackButton";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bike, ChevronRight, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Trash2, User } from "lucide-react";
@@ -70,6 +71,7 @@ function SignupPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
+      <BackButton floating />
       <form onSubmit={submit} className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 shadow-2xl">
         <img src={logo.url} alt="Alina Mart" className="mx-auto h-16 w-16 rounded-2xl object-cover" />
         <h1 className="mt-2 text-center text-xl font-extrabold">
@@ -129,7 +131,8 @@ function ProfileView({ me }: { me: Account }) {
   const input = "mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm";
 
   return (
-    <div className="min-h-screen brand-gradient p-4 pb-10">
+    <div className="min-h-screen brand-gradient p-4 pb-10 pt-16">
+      <BackButton floating />
       <div className="animate-fade-up mx-auto w-full max-w-md">
         {/* Header card */}
         <div className="rounded-3xl bg-card p-5 text-center shadow-2xl">

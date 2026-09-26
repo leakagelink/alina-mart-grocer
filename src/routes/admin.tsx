@@ -11,6 +11,7 @@ import { CouponsAdmin } from "@/components/CouponsAdmin";
 import { AppSettingsAdmin } from "@/components/AppSettingsAdmin";
 import { NotificationsAdmin } from "@/components/NotificationsAdmin";
 import { BottomNav } from "@/components/BottomNav";
+import { BackButton } from "@/components/BackButton";
 import {
   CATEGORIES,
   STATUS_LABEL,
@@ -127,6 +128,7 @@ function Admin() {
   if (!me || me.role !== "admin") {
     return (
       <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
+        <BackButton floating />
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -176,15 +178,16 @@ function Admin() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-10 pt-4">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="text-lg font-bold">Admin panel</h1>
-          <div className="flex items-center gap-2">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-3 pb-24 pt-4 sm:px-4">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+          <h1 className="truncate text-lg font-bold">Admin panel</h1>
+          <div className="flex shrink-0 items-center gap-2">
             <Link
               to="/delivery"
               className="rounded-xl bg-secondary px-3 py-2 text-xs font-bold text-secondary-foreground"
             >
-              Delivery partner view
+              <span className="sm:hidden">Rider view</span>
+              <span className="hidden sm:inline">Delivery partner view</span>
             </Link>
             <button
               onClick={() => { logOut(); toast.success("Logout ho gaya"); }}
@@ -195,19 +198,19 @@ function Admin() {
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           <Stat icon={ShoppingBag} label="Orders" value={String(stats.orders)} />
           <Stat icon={IndianRupee} label="Revenue" value={inr(stats.revenue)} />
           <Stat icon={PackageCheck} label="Pending" value={String(stats.pending)} />
           <Stat icon={TriangleAlert} label="Low stock" value={String(stats.low)} />
         </div>
 
-        <div className="hide-scrollbar mt-5 flex gap-2 overflow-x-auto">
+        <div className="hide-scrollbar sticky top-[104px] z-20 -mx-3 mt-4 flex gap-2 overflow-x-auto bg-background px-3 py-2 sm:static sm:mx-0 sm:px-0">
           {TABS.map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`shrink-0 rounded-xl px-4 py-2 text-sm font-bold ${
+              className={`shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-xs font-bold sm:px-4 sm:text-sm ${
                 tab === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}
             >
@@ -250,7 +253,7 @@ function Admin() {
                   </span>
                   <span className="ml-auto text-sm font-bold">{inr(o.total)}</span>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 break-words text-xs text-muted-foreground">
                   {o.customer.name} • {o.customer.phone} • {o.customer.address}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -278,10 +281,11 @@ function Admin() {
           <>
             <div className="mt-4 rounded-2xl border bg-card p-4">
               <p className="text-sm font-bold">{editingId ? "Edit product" : "Add new product"}</p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <input
                   className="rounded-xl border bg-background px-3 py-2 text-sm"
                   placeholder="Product name"
+                  style={{ gridColumn: "1 / -1" }}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
@@ -347,7 +351,7 @@ function Admin() {
             </div>
 
             <div className="mt-4 overflow-x-auto rounded-2xl border bg-card">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[440px] text-sm">
                 <thead className="bg-muted text-left text-xs uppercase text-muted-foreground">
                   <tr>
                     <th className="p-3">Product</th>
@@ -386,7 +390,7 @@ function Admin() {
                           }
                         />
                       </td>
-                      <td className="flex gap-3 p-3">
+                      <td className="p-3"><div className="flex gap-3">
                         <button
                           onClick={() => {
                             setEditingId(p.id);
@@ -408,7 +412,7 @@ function Admin() {
                           aria-label="Delete product"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </button></div>
                       </td>
                     </tr>
                   ))}
