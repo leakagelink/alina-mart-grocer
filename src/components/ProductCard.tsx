@@ -1,4 +1,5 @@
 import { Minus, Plus } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n";
 import { addToCart, inr, removeOne, useStore, type Product } from "@/lib/store";
 
@@ -14,15 +15,22 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       className="animate-card-in flex flex-col rounded-2xl border bg-card p-3 transition-shadow hover:shadow-lg"
       style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
     >
-      <div className="relative grid h-24 place-items-center rounded-xl bg-surface text-5xl">
+      <Link
+        to="/product/$id"
+        params={{ id: product.id }}
+        className="relative grid h-24 place-items-center rounded-xl bg-surface text-5xl"
+        aria-label={`${product.name} details`}
+      >
         <span>{product.emoji}</span>
         {off > 0 && (
           <span className="absolute left-1 top-1 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-bold text-secondary-foreground">
             {off}% {t("off")}
           </span>
         )}
-      </div>
-      <p className="mt-2 line-clamp-2 text-sm font-semibold">{product.name}</p>
+      </Link>
+      <Link to="/product/$id" params={{ id: product.id }} className="mt-2">
+        <p className="line-clamp-2 text-sm font-semibold">{product.name}</p>
+      </Link>
       <p className="text-xs text-muted-foreground">{product.unit}</p>
       <div className="mt-auto flex items-center justify-between pt-2">
         <div>
