@@ -39,6 +39,7 @@ function SignupPage() {
     run();
   };
   const run = (): unknown => {
+    void 0;
     const ph = phone.trim();
     if (!/^\d{10}$/.test(ph)) return toast.error("10 digit mobile number daaliye");
     if (!/^\d{4}$/.test(pin)) return toast.error("4 digit PIN daaliye");
