@@ -81,7 +81,7 @@ function Home() {
   const count = cartCount(state);
   const subtotal = cartSubtotal(state);
   const searching = query.trim().length > 0 || cat !== null;
-  const activeBanner = banners[banner];
+  const activeBanner = banners[banner] ?? banners[0]!;
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
