@@ -17,7 +17,7 @@ const LABEL: Record<string, string> = {
 
 export function RidersKyc() {
   const s = useAccounts();
-  useEffect(() => hydrateAccounts(), []);
+  useEffect(() => { hydrateAccounts(); }, []);
   const riders = s.accounts
     .filter((a) => a.role === "delivery")
     .sort((a, b) => Number(b.kycStatus === "submitted") - Number(a.kycStatus === "submitted"));

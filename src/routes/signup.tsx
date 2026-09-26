@@ -27,15 +27,19 @@ function SignupPage() {
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState("");
 
-  useEffect(() => hydrateAccounts(), []);
+  useEffect(() => { hydrateAccounts(); }, []);
 
   const go = (a: Account) => {
     if (a.role === "delivery") nav({ to: a.kycStatus === "approved" ? "/delivery" : "/kyc" });
     else nav({ to: "/" });
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent): void => {
     e.preventDefault();
+    run();
+  };
+  const run = (): unknown => {
+    void 0;
     const ph = phone.trim();
     if (!/^\d{10}$/.test(ph)) return toast.error("10 digit mobile number daaliye");
     if (!/^\d{4}$/.test(pin)) return toast.error("4 digit PIN daaliye");
@@ -53,6 +57,8 @@ function SignupPage() {
     } catch (err) {
       toast.error((err as Error).message);
     }
+
+    return undefined;
   };
 
   const input = "mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm";

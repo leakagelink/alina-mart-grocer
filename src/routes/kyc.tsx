@@ -82,7 +82,7 @@ function KycPage() {
   return <KycForm accId={acc.id} name={acc.name} rejectReason={acc.kycStatus === "rejected" ? acc.rejectReason : undefined} onLogout={out} />;
 }
 
-function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name: string; rejectReason?: string; onLogout: () => void }) {
+function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name: string; rejectReason?: string | undefined; onLogout: () => void }) {
   const [f, setF] = useState({ fullName: name, dob: "", address: "", aadhaar: "", pan: "", dlNumber: "", vehicleType: "Bike", vehicleNumber: "", bankAccount: "", ifsc: "" });
   const [docs, setDocs] = useState<Record<string, KycDoc>>({});
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
@@ -105,9 +105,11 @@ function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name:
     const missing = DOCS.filter((d) => !docs[d]);
     if (missing.length) return toast.error(`Upload kariye: ${missing[0]}`);
     try {
-      submitKyc(accId, { ...f, pan: f.pan.toUpperCase(), ifsc: f.ifsc.toUpperCase(), docs: DOCS.map((d) => docs[d]), submittedAt: Date.now() });
+      submitKyc(accId, { ...f, pan: f.pan.toUpperCase(), ifsc: f.ifsc.toUpperCase(), docs: DOCS.map((d) => docs[d]!), submittedAt: Date.now() });
       toast.success("KYC submit ho gaya! Admin approval ka intezaar kariye");
     } catch (err) { toast.error((err as Error).message); }
+
+    return undefined;
   };
 
   const inp = "mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm";

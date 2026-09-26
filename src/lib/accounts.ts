@@ -26,7 +26,7 @@ export type Account = {
   createdAt: number;
   kycStatus?: KycStatus;
   kyc?: Kyc;
-  rejectReason?: string;
+  rejectReason?: string | undefined;
 };
 
 const KEY = "alina-accounts-v1";
