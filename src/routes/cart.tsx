@@ -14,6 +14,7 @@ import {
   removeOne,
   useStore,
 } from "@/lib/store";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/cart")({
 
 function CartPage() {
   const state = useStore();
+  const { t } = useLang();
   useEffect(() => {
     hydrate();
   }, []);
@@ -43,13 +45,13 @@ function CartPage() {
       <Header />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-8 pt-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-bold">Your cart</h1>
+          <h1 className="text-lg font-bold">{t("yourCart")}</h1>
           {state.cart.length > 0 && (
             <button
               onClick={clearCart}
               className="flex items-center gap-1 text-sm text-muted-foreground"
             >
-              <Trash2 className="h-4 w-4" /> Clear
+              <Trash2 className="h-4 w-4" /> {t("clear")}
             </button>
           )}
         </div>
@@ -57,12 +59,12 @@ function CartPage() {
         {state.cart.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-5xl">🛒</p>
-            <p className="mt-3 text-sm text-muted-foreground">Cart khaali hai.</p>
+            <p className="mt-3 text-sm text-muted-foreground">{t("cartEmpty")}</p>
             <Link
               to="/"
               className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
             >
-              Start shopping
+              {t("startShopping")}
             </Link>
           </div>
         ) : (
@@ -101,20 +103,20 @@ function CartPage() {
 
             <div className="mt-5 rounded-2xl border bg-card p-4 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Item total</span>
+                <span className="text-muted-foreground">{t("itemTotal")}</span>
                 <span className="font-semibold">{inr(subtotal)}</span>
               </div>
               <div className="mt-2 flex justify-between">
-                <span className="text-muted-foreground">Delivery fee</span>
-                <span className="font-semibold">{fee === 0 ? "FREE" : inr(fee)}</span>
+                <span className="text-muted-foreground">{t("deliveryFee")}</span>
+                <span className="font-semibold">{fee === 0 ? t("free") : inr(fee)}</span>
               </div>
               {fee > 0 && (
                 <p className="mt-2 text-xs text-secondary">
-                  {inr(FREE_DELIVERY_ABOVE - subtotal)} aur add karein — delivery free!
+                  {inr(FREE_DELIVERY_ABOVE - subtotal)} {t("addMoreFree")}
                 </p>
               )}
               <div className="mt-3 flex justify-between border-t pt-3 text-base font-bold">
-                <span>To pay</span>
+                <span>{t("toPay")}</span>
                 <span>{inr(subtotal + fee)}</span>
               </div>
             </div>
@@ -123,7 +125,7 @@ function CartPage() {
               to="/checkout"
               className="mt-4 block rounded-xl bg-primary py-3 text-center text-sm font-bold text-primary-foreground"
             >
-              Proceed to checkout
+              {t("proceed")}
             </Link>
           </>
         )}

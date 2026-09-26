@@ -4,6 +4,7 @@ import { Clock, Zap } from "lucide-react";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ProductCard";
+import { useLang } from "@/lib/i18n";
 import { CATEGORIES, cartCount, cartSubtotal, hydrate, inr, useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
@@ -31,6 +32,7 @@ function Home() {
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<string | null>(null);
   const state = useStore();
+  const { t, tc } = useLang();
 
   useEffect(() => {
     hydrate();
@@ -54,18 +56,18 @@ function Home() {
         <section className="animate-fade-up flex items-center gap-4 rounded-2xl bg-accent p-4">
           <div>
             <p className="flex items-center gap-1 text-sm font-bold text-accent-foreground">
-              <Zap className="h-4 w-4" /> Superfast delivery
+              <Zap className="h-4 w-4" /> {t("superfast")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Groceries • Daily Essentials • More — at your door in 15 minutes
+              {t("heroSub")}
             </p>
           </div>
           <span className="ml-auto flex items-center gap-1 rounded-xl bg-card px-3 py-2 text-sm font-bold text-primary">
-            <Clock className="h-4 w-4" /> 15 min
+            <Clock className="h-4 w-4" /> {t("min15")}
           </span>
         </section>
 
-        <h2 className="mb-2 mt-6 text-base font-bold">Shop by category</h2>
+        <h2 className="mb-2 mt-6 text-base font-bold">{t("shopByCat")}</h2>
         <div className="hide-scrollbar flex gap-3 overflow-x-auto pb-1">
           <button
             onClick={() => setCat(null)}
@@ -73,7 +75,7 @@ function Home() {
               cat === null ? "border-primary bg-primary text-primary-foreground" : "bg-card"
             }`}
           >
-            All
+            {t("all")}
           </button>
           {CATEGORIES.map((c) => (
             <button
@@ -84,13 +86,13 @@ function Home() {
               }`}
             >
               <span className="mr-1">{c.emoji}</span>
-              {c.name}
+              {tc(c.id, c.name)}
             </button>
           ))}
         </div>
 
         <h2 className="mb-3 mt-6 text-base font-bold">
-          {cat ? CATEGORIES.find((c) => c.id === cat)?.name : "All products"}
+          {cat ? tc(cat, CATEGORIES.find((c) => c.id === cat)?.name ?? "") : t("allProducts")}
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {products.map((p, i) => (
@@ -99,7 +101,7 @@ function Home() {
         </div>
         {products.length === 0 && (
           <p className="py-10 text-center text-sm text-muted-foreground">
-            Koi product nahi mila. Doosra naam try karein.
+            {t("noProducts")}
           </p>
         )}
       </main>
@@ -111,9 +113,9 @@ function Home() {
         >
           <div className="flex items-center justify-between text-sm font-bold">
             <span>
-              {count} item{count > 1 ? "s" : ""} • {inr(subtotal)}
+              {count} {t("items")} • {inr(subtotal)}
             </span>
-            <span>View cart →</span>
+            <span>{t("viewCart")}</span>
           </div>
         </Link>
       )}
