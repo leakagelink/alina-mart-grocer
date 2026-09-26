@@ -2,10 +2,16 @@ import { Link } from "@tanstack/react-router";
 import { MapPin, ShoppingCart, LayoutDashboard, User } from "lucide-react";
 import logo from "@/assets/alina-logo.jpg.asset.json";
 import { cartCount, useStore } from "@/lib/store";
+import { currentAccount, hydrateAccounts, useAccounts } from "@/lib/accounts";
+import { useEffect } from "react";
 
 export function Header({ query, onQuery }: { query?: string; onQuery?: (v: string) => void }) {
   const state = useStore();
+  const accState = useAccounts();
+  const me = currentAccount(accState);
   const count = cartCount(state);
+
+  useEffect(() => { hydrateAccounts(); }, []);
 
   return (
     <header className="sticky top-0 z-30 brand-gradient text-primary-foreground">
@@ -21,12 +27,14 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
           </span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
-          <Link
-            to="/admin"
-            className="hidden items-center gap-1 rounded-lg bg-white/15 px-3 py-2 text-sm font-medium sm:flex"
-          >
-            <LayoutDashboard className="h-4 w-4" /> Admin
-          </Link>
+          {me?.role === "admin" && (
+            <Link
+              to="/admin"
+              className="hidden items-center gap-1 rounded-lg bg-white/15 px-3 py-2 text-sm font-medium sm:flex"
+            >
+              <LayoutDashboard className="h-4 w-4" /> Admin
+            </Link>
+          )}
           <Link to="/signup" aria-label="Account" className="rounded-lg bg-white/15 p-2">
             <User className="h-5 w-5" />
           </Link>
