@@ -90,55 +90,6 @@ function Admin() {
     hydrateAccounts();
   }, []);
 
-  if (!me || me.role !== "admin") {
-    return (
-      <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            try {
-              const a = logIn(phone.trim(), password);
-              if (a.role !== "admin") {
-                logOut();
-                toast.error("Ye admin account nahi hai");
-                return;
-              }
-              toast.success("Welcome Admin!");
-            } catch (err) {
-              toast.error((err as Error).message);
-            }
-          }}
-          className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 shadow-2xl"
-        >
-          <h1 className="text-center text-xl font-extrabold">Admin Login</h1>
-          <p className="mt-1 text-center text-xs text-muted-foreground">Sirf admin ke liye</p>
-          <label className="mt-4 block text-xs font-bold">Mobile number</label>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-            inputMode="numeric"
-            maxLength={10}
-            className="mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm"
-            placeholder="10 digit number"
-          />
-          <label className="mt-3 block text-xs font-bold">Password</label>
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            className="mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm"
-          />
-          <button className="mt-5 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
-            Login
-          </button>
-          <Link to="/" className="mt-3 block text-center text-xs text-muted-foreground underline">
-            Home par wapas
-          </Link>
-        </form>
-      </div>
-    );
-  }
-
   const stats = useMemo(() => {
     const revenue = state.orders
       .filter((o) => o.status !== "cancelled")
