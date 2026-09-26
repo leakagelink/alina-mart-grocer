@@ -45,7 +45,6 @@ export const Route = createFileRoute("/delivery")({
 
 type Rider = { id: string; name: string; phone: string; vehicle: string };
 const PER_DELIVERY = 30;
-const SESSION_KEY = "alina-rider";
 const ONLINE_KEY = "alina-rider-online";
 
 const otpFor = (o: Order) => o.customer.phone.replace(/\D/g, "").slice(-4) || "0000";
