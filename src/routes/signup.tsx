@@ -25,7 +25,7 @@ function SignupPage() {
   const [role, setRole] = useState<Role>("customer");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [pin, setPin] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => { hydrateAccounts(); }, []);
 
@@ -42,15 +42,15 @@ function SignupPage() {
     void 0;
     const ph = phone.trim();
     if (!/^\d{10}$/.test(ph)) return toast.error("10 digit mobile number daaliye");
-    if (!/^\d{4}$/.test(pin)) return toast.error("4 digit PIN daaliye");
+    if (password.length < 6) return toast.error("Password kam se kam 6 characters ka hona chahiye");
     try {
       if (mode === "signup") {
         if (name.trim().length < 2) return toast.error("Naam daaliye");
-        const a = signUp({ role, name: name.trim().slice(0, 60), phone: ph, pin });
+        const a = signUp({ role, name: name.trim().slice(0, 60), phone: ph, password });
         toast.success(role === "delivery" ? "Account ban gaya! Ab KYC complete kariye" : "Welcome to Alina Mart!");
         go(a);
       } else {
-        const a = logIn(ph, pin);
+        const a = logIn(ph, password);
         toast.success(`Welcome ${a.name}!`);
         go(a);
       }
@@ -103,8 +103,8 @@ function SignupPage() {
 
         <label className="mt-3 block text-xs font-bold">Mobile number</label>
         <input value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))} inputMode="numeric" maxLength={10} className={input} placeholder="10 digit number" />
-        <label className="mt-3 block text-xs font-bold">4 digit PIN</label>
-        <input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} type="password" inputMode="numeric" maxLength={4} className={input} />
+        <label className="mt-3 block text-xs font-bold">Password</label>
+        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" maxLength={40} className={input} placeholder="Kam se kam 6 characters" />
 
         <button className="mt-5 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
           {mode === "signup" ? "Account banaiye" : "Login"}

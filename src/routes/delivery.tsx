@@ -87,7 +87,7 @@ function DeliveryApp() {
           <h1 className="mt-2 text-xl font-extrabold">Alina Mart Rider</h1>
           <p className="text-sm text-muted-foreground">Delivery partner account se login ya sign up kariye</p>
           <Link to="/signup" className="mt-4 block rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground">Sign up / Login</Link>
-          <p className="mt-3 text-[11px] text-muted-foreground">Demo rider: 9876543210 / PIN 1234</p>
+          <p className="mt-3 text-[11px] text-muted-foreground">Demo rider: 9876543210 / password ravi123</p>
         </div>
       </div>
     );
