@@ -61,7 +61,11 @@ export function hydrateAccounts() {
   loaded = true;
   try {
     const raw = localStorage.getItem(KEY);
-    const accounts = raw ? (JSON.parse(raw) as Account[]) : SEED;
+    let accounts = raw ? (JSON.parse(raw) as Account[]) : SEED;
+    // Purane saved data me admin/rider seeds missing ho to add karo
+    for (const s of SEED) {
+      if (!accounts.some((a) => a.phone === s.phone)) accounts = [...accounts, s];
+    }
     state = { accounts, sessionId: localStorage.getItem(SESSION) };
     ls.forEach((l) => l());
   } catch {
