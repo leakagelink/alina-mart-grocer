@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Clock, Zap } from "lucide-react";
+import { BadgeCheck, ChevronRight, Leaf, Tag, Truck, Zap } from "lucide-react";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ProductCard";
@@ -31,12 +31,32 @@ export const Route = createFileRoute("/")({
 function Home() {
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<string | null>(null);
+  const [banner, setBanner] = useState(0);
   const state = useStore();
   const { t, tc } = useLang();
 
   useEffect(() => {
     hydrate();
   }, []);
+
+  const banners = useMemo(
+    () => [
+      { emoji: "🥬", title: t("b1t"), sub: t("b1b"), cat: "fruits" },
+      {
+        emoji: "🚚",
+        title: t("b2t"),
+        sub: `${t("free")} ₹${state.settings.freeDeliveryAbove}+`,
+        cat: null,
+      },
+      { emoji: "🥛", title: t("b3t"), sub: t("b3b"), cat: "dairy" },
+    ],
+    [t, state.settings.freeDeliveryAbove],
+  );
+
+  useEffect(() => {
+    const id = setInterval(() => setBanner((b) => (b + 1) % banners.length), 4000);
+    return () => clearInterval(id);
+  }, [banners.length]);
 
   const products = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -45,71 +65,200 @@ function Home() {
     );
   }, [state.products, query, cat]);
 
+  const bestsellers = useMemo(
+    () => [...state.products].filter((p) => p.stock > 0).slice(0, 10),
+    [state.products],
+  );
+  const deals = useMemo(
+    () =>
+      [...state.products]
+        .filter((p) => p.mrp > p.price && p.stock > 0)
+        .sort((a, b) => (b.mrp - b.price) / b.mrp - (a.mrp - a.price) / a.mrp)
+        .slice(0, 10),
+    [state.products],
+  );
+
   const count = cartCount(state);
   const subtotal = cartSubtotal(state);
+  const searching = query.trim().length > 0 || cat !== null;
+  const activeBanner = banners[banner];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface">
       <Header query={query} onQuery={setQuery} />
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-4">
-        <section className="animate-fade-up flex items-center gap-4 rounded-2xl bg-accent p-4">
-          <div>
-            <p className="flex items-center gap-1 text-sm font-bold text-accent-foreground">
-              <Zap className="h-4 w-4" /> {t("superfast")}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t("heroSub")}
-            </p>
-          </div>
-          <span className="ml-auto flex items-center gap-1 rounded-xl bg-card px-3 py-2 text-sm font-bold text-primary">
-            <Clock className="h-4 w-4" /> {t("min15")}
-          </span>
-        </section>
-
+      <main className="mx-auto w-full max-w-5xl flex-1 pb-28">
         {state.settings.announcement && (
-          <div className="animate-pop mt-3 rounded-2xl border border-primary/30 bg-card p-3 text-center text-sm font-semibold text-primary">
+          <div className="brand-gradient px-4 pb-3 text-center text-xs font-semibold text-primary-foreground">
             📣 {state.settings.announcement}
           </div>
         )}
 
-        <h2 className="mb-2 mt-6 text-base font-bold">{t("shopByCat")}</h2>
-        <div className="hide-scrollbar flex gap-3 overflow-x-auto pb-1">
-          <button
-            onClick={() => setCat(null)}
-            className={`shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold ${
-              cat === null ? "border-primary bg-primary text-primary-foreground" : "bg-card"
-            }`}
-          >
-            {t("all")}
-          </button>
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setCat(cat === c.id ? null : c.id)}
-              className={`shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold ${
-                cat === c.id ? "border-primary bg-primary text-primary-foreground" : "bg-card"
-              }`}
-            >
-              <span className="mr-1">{c.emoji}</span>
-              {tc(c.id, c.name)}
-            </button>
-          ))}
-        </div>
+        {!searching && (
+          <>
+            {/* Promo banner carousel */}
+            <section className="px-4 pt-4">
+              <button
+                onClick={() => setCat(activeBanner.cat)}
+                className="animate-fade-up relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-accent p-5 text-left"
+              >
+                <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-card text-4xl shadow-sm">
+                  {activeBanner.emoji}
+                </span>
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+                    <Zap className="h-3 w-3" /> {t("min15")}
+                  </span>
+                  <span className="block truncate text-lg font-extrabold text-accent-foreground">
+                    {activeBanner.title}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {activeBanner.sub}
+                  </span>
+                </span>
+                <span className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">
+                  {t("shopNow")} <ChevronRight className="h-3.5 w-3.5" />
+                </span>
+              </button>
+              <div className="mt-2 flex justify-center gap-1.5">
+                {banners.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setBanner(i)}
+                    aria-label={`Banner ${i + 1}`}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === banner ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30"
+                    }`}
+                  />
+                ))}
+              </div>
+            </section>
 
-        <h2 className="mb-3 mt-6 text-base font-bold">
-          {cat ? tc(cat, CATEGORIES.find((c) => c.id === cat)?.name ?? "") : t("allProducts")}
-        </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {products.map((p, i) => (
-            <ProductCard key={p.id} product={p} index={i} />
-          ))}
-        </div>
-        {products.length === 0 && (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            {t("noProducts")}
-          </p>
+            {/* Category circles */}
+            <section className="mt-5 px-4">
+              <h2 className="mb-3 text-base font-extrabold">{t("shopByCat")}</h2>
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+                {CATEGORIES.map((c, i) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setCat(c.id)}
+                    className="animate-card-in flex flex-col items-center gap-2"
+                    style={{ animationDelay: `${i * 50}ms` }}
+                  >
+                    <span className="grid h-16 w-16 place-items-center rounded-2xl border bg-card text-3xl shadow-sm transition-transform active:scale-90 sm:h-20 sm:w-20">
+                      {c.emoji}
+                    </span>
+                    <span className="text-center text-[11px] font-semibold leading-tight">
+                      {tc(c.id, c.name)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Top deals */}
+            {deals.length > 0 && (
+              <section className="mt-6">
+                <div className="mb-3 flex items-center justify-between px-4">
+                  <h2 className="flex items-center gap-1.5 text-base font-extrabold">
+                    <Tag className="h-4 w-4 text-secondary" /> {t("topDeals")}
+                  </h2>
+                  <button
+                    onClick={() => setCat("fruits")}
+                    className="text-xs font-bold text-primary"
+                  >
+                    {t("viewAll")} →
+                  </button>
+                </div>
+                <div className="hide-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
+                  {deals.map((p, i) => (
+                    <div key={p.id} className="w-36 shrink-0 sm:w-40">
+                      <ProductCard product={p} index={i} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Bestsellers */}
+            {bestsellers.length > 0 && (
+              <section className="mt-6">
+                <div className="mb-3 flex items-center justify-between px-4">
+                  <h2 className="flex items-center gap-1.5 text-base font-extrabold">
+                    <BadgeCheck className="h-4 w-4 text-primary" /> {t("bestsellers")}
+                  </h2>
+                </div>
+                <div className="hide-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
+                  {bestsellers.map((p, i) => (
+                    <div key={p.id} className="w-36 shrink-0 sm:w-40">
+                      <ProductCard product={p} index={i} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Trust badges */}
+            <section className="mx-4 mt-6 grid grid-cols-3 gap-2 rounded-3xl border bg-card p-4">
+              {[
+                { icon: Leaf, label: t("whyFresh") },
+                { icon: Truck, label: t("whyFast") },
+                { icon: Tag, label: t("whyPrice") },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label} className="flex flex-col items-center gap-1.5 text-center">
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-accent">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </span>
+                  <span className="text-[11px] font-semibold leading-tight text-muted-foreground">
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </section>
+          </>
         )}
+
+        {/* Product grid (search/filter results or all) */}
+        <section className="mt-6 px-4">
+          <h2 className="mb-3 text-base font-extrabold">
+            {searching
+              ? cat
+                ? tc(cat, CATEGORIES.find((c) => c.id === cat)?.name ?? "")
+                : t("allProducts")
+              : t("allProducts")}
+          </h2>
+          {searching && (
+            <div className="hide-scrollbar mb-3 flex gap-2 overflow-x-auto pb-1">
+              <button
+                onClick={() => setCat(null)}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                  cat === null ? "border-primary bg-primary text-primary-foreground" : "bg-card"
+                }`}
+              >
+                {t("all")}
+              </button>
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setCat(cat === c.id ? null : c.id)}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                    cat === c.id ? "border-primary bg-primary text-primary-foreground" : "bg-card"
+                  }`}
+                >
+                  {c.emoji} {tc(c.id, c.name)}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {products.map((p, i) => (
+              <ProductCard key={p.id} product={p} index={i} />
+            ))}
+          </div>
+          {products.length === 0 && (
+            <p className="py-10 text-center text-sm text-muted-foreground">{t("noProducts")}</p>
+          )}
+        </section>
       </main>
 
       {count > 0 && (
