@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { MapPin, ShoppingCart, LayoutDashboard } from "lucide-react";
+import { MapPin, ShoppingCart, LayoutDashboard, User } from "lucide-react";
 import logo from "@/assets/alina-logo.jpg.asset.json";
 import { cartCount, useStore } from "@/lib/store";
 
@@ -26,6 +26,9 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
             className="hidden items-center gap-1 rounded-lg bg-white/15 px-3 py-2 text-sm font-medium sm:flex"
           >
             <LayoutDashboard className="h-4 w-4" /> Admin
+          </Link>
+          <Link to="/signup" aria-label="Account" className="rounded-lg bg-white/15 p-2">
+            <User className="h-5 w-5" />
           </Link>
           <Link to="/cart" className="relative rounded-lg bg-white/15 p-2">
             <ShoppingCart className="h-5 w-5" />
