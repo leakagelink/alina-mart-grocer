@@ -415,7 +415,7 @@ function OtpDialog({ order, onClose }: { order: Order; onClose: () => void }) {
 }
 
 function ReturnDialog({ order, onClose }: { order: Order; onClose: () => void }) {
-  const [reason, setReason] = useState(REASONS[0]);
+  const [reason, setReason] = useState<string>(REASONS[0] ?? "");
   const [note, setNote] = useState("");
   const submit = () => {
     const text = note.trim() ? `${reason} — ${note.trim()}` : reason;

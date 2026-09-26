@@ -66,7 +66,7 @@ function Checkout() {
     if (payment === "online") {
       await new Promise((r) => setTimeout(r, 1200));
     }
-    const order = placeOrder({ customer: parsed.data, payment, note: note.trim() || undefined });
+    const order = placeOrder({ customer: parsed.data, payment, ...(note.trim() ? { note: note.trim() } : {}) });
     setBusy(false);
     if (!order) return;
     toast.success(payment === "online" ? "Payment successful" : "Order placed — COD");
