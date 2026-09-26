@@ -368,14 +368,14 @@ export function returnOrder(id: string, reason: string) {
 export function depositCash(rider: string, amount: number): CashDeposit {
   const d: CashDeposit = { id: "CD" + Date.now().toString().slice(-8), rider, amount, at: Date.now() };
   set({ ...state, cashDeposits: [d, ...state.cashDeposits] });
-  uid().then((me) => me && write(supabase.from("rider_ledger").insert({ id: d.id, kind: "deposit", rider_id: me, data: d as never })));
+  uid().then((me) => { if (me) void write(supabase.from("rider_ledger").insert({ id: d.id, kind: "deposit", rider_id: me, data: d as never })); });
   return d;
 }
 
 export function requestPayout(rider: string, amount: number): Payout {
   const p: Payout = { id: "PO" + Date.now().toString().slice(-8), rider, amount, at: Date.now(), status: "pending" };
   set({ ...state, payouts: [p, ...state.payouts] });
-  uid().then((me) => me && write(supabase.from("rider_ledger").insert({ id: p.id, kind: "payout", rider_id: me, data: p as never })));
+  uid().then((me) => { if (me) void write(supabase.from("rider_ledger").insert({ id: p.id, kind: "payout", rider_id: me, data: p as never })); });
   return p;
 }
 
