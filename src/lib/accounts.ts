@@ -17,6 +17,14 @@ export type Kyc = {
   docs: KycDoc[];
   submittedAt: number;
 };
+export type Address = {
+  id: string;
+  label: string; // Home / Office / Other
+  line: string;
+  landmark?: string;
+  pincode: string;
+  isDefault?: boolean;
+};
 export type Account = {
   id: string;
   role: Role;
@@ -24,6 +32,7 @@ export type Account = {
   phone: string;
   password: string;
   createdAt: number;
+  addresses?: Address[];
   kycStatus?: KycStatus;
   kyc?: Kyc;
   rejectReason?: string | undefined;
@@ -123,4 +132,42 @@ export function approveKyc(id: string) {
 }
 export function rejectKyc(id: string, reason: string) {
   patch(id, { kycStatus: "rejected", rejectReason: reason });
+}
+
+export function updateProfile(id: string, p: { name: string }) {
+  if (p.name.trim().length < 2) throw new Error("Naam kam se kam 2 characters ka hona chahiye");
+  patch(id, { name: p.name.trim().slice(0, 60) });
+}
+
+export function changePassword(id: string, oldPw: string, newPw: string) {
+  const a = state.accounts.find((x) => x.id === id);
+  if (!a) throw new Error("Account nahi mila");
+  if (a.password !== oldPw) throw new Error("Purana password galat hai");
+  if (newPw.length < 6) throw new Error("Naya password kam se kam 6 characters ka hona chahiye");
+  patch(id, { password: newPw });
+}
+
+export function saveAddress(id: string, addr: Address) {
+  const a = state.accounts.find((x) => x.id === id);
+  if (!a) throw new Error("Account nahi mila");
+  const list = a.addresses ?? [];
+  const isFirst = list.length === 0;
+  const next = addr.isDefault || isFirst
+    ? [...list.filter((x) => x.id !== addr.id).map((x) => ({ ...x, isDefault: false })), { ...addr, isDefault: true }]
+    : [...list.filter((x) => x.id !== addr.id), addr];
+  patch(id, { addresses: next });
+}
+
+export function deleteAddress(id: string, addrId: string) {
+  const a = state.accounts.find((x) => x.id === id);
+  if (!a) return;
+  const next = (a.addresses ?? []).filter((x) => x.id !== addrId);
+  if (next.length > 0 && !next.some((x) => x.isDefault)) next[0] = { ...next[0]!, isDefault: true };
+  patch(id, { addresses: next });
+}
+
+export function setDefaultAddress(id: string, addrId: string) {
+  const a = state.accounts.find((x) => x.id === id);
+  if (!a) return;
+  patch(id, { addresses: (a.addresses ?? []).map((x) => ({ ...x, isDefault: x.id === addrId })) });
 }
