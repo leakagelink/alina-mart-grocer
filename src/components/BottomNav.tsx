@@ -1,23 +1,32 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, ShoppingCart, ClipboardList, LayoutDashboard } from "lucide-react";
 import { cartCount, useStore } from "@/lib/store";
+import { currentAccount, hydrateAccounts, useAccounts } from "@/lib/accounts";
+import { useEffect } from "react";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
   { to: "/cart", label: "Cart", icon: ShoppingCart },
   { to: "/orders", label: "Orders", icon: ClipboardList },
-  { to: "/admin", label: "Admin", icon: LayoutDashboard },
 ] as const;
 
 export function BottomNav() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const state = useStore();
+  const accState = useAccounts();
+  const me = currentAccount(accState);
   const count = cartCount(state);
+
+  useEffect(() => { hydrateAccounts(); }, []);
+
+  const navItems = me?.role === "admin"
+    ? [...items, { to: "/admin", label: "Admin", icon: LayoutDashboard } as const]
+    : items;
 
   return (
     <nav className="sticky bottom-0 z-30 border-t bg-card">
       <div className="mx-auto flex max-w-5xl">
-        {items.map(({ to, label, icon: Icon }) => {
+        {navItems.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? path === "/" : path.startsWith(to);
           return (
             <Link
