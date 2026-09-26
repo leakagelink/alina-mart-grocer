@@ -147,12 +147,20 @@ function Admin() {
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-10 pt-4">
         <div className="flex items-center justify-between gap-2">
           <h1 className="text-lg font-bold">Admin panel</h1>
-          <Link
-            to="/delivery"
-            className="rounded-xl bg-secondary px-3 py-2 text-xs font-bold text-secondary-foreground"
-          >
-            Delivery partner view
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/delivery"
+              className="rounded-xl bg-secondary px-3 py-2 text-xs font-bold text-secondary-foreground"
+            >
+              Delivery partner view
+            </Link>
+            <button
+              onClick={() => { logOut(); toast.success("Logout ho gaya"); }}
+              className="rounded-xl bg-muted px-3 py-2 text-xs font-bold text-muted-foreground"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
