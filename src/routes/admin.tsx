@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { IndianRupee, PackageCheck, ShoppingBag, TriangleAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
+import { RidersKyc } from "@/components/RidersKyc";
 import { BottomNav } from "@/components/BottomNav";
 import {
   CATEGORIES,
