@@ -14,16 +14,191 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          data: Json
+          id: number
+        }
+        Insert: {
+          data: Json
+          id?: number
+        }
+        Update: {
+          data?: Json
+          id?: number
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          code: string
+          data: Json
+        }
+        Insert: {
+          code: string
+          data: Json
+        }
+        Update: {
+          code?: string
+          data?: Json
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_id: string
+          data: Json
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          data: Json
+          id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          data?: Json
+          id?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          addresses: Json
+          blocked: boolean
+          created_at: string
+          id: string
+          kyc: Json | null
+          kyc_status: string | null
+          name: string
+          phone: string
+          reject_reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          addresses?: Json
+          blocked?: boolean
+          created_at?: string
+          id: string
+          kyc?: Json | null
+          kyc_status?: string | null
+          name?: string
+          phone: string
+          reject_reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          addresses?: Json
+          blocked?: boolean
+          created_at?: string
+          id?: string
+          kyc?: Json | null
+          kyc_status?: string | null
+          name?: string
+          phone?: string
+          reject_reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rider_ledger: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          kind: string
+          rider_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id: string
+          kind: string
+          rider_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          kind?: string
+          rider_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_approved_rider: { Args: { _uid: string }; Returns: boolean }
+      place_order: { Args: { p_order: Json }; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "delivery" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +325,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "delivery", "customer"],
+    },
   },
 } as const
