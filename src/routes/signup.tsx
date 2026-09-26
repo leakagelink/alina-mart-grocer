@@ -30,7 +30,8 @@ function SignupPage() {
   useEffect(() => { hydrateAccounts(); }, []);
 
   const go = (a: Account) => {
-    if (a.role === "delivery") nav({ to: a.kycStatus === "approved" ? "/delivery" : "/kyc" });
+    if (a.role === "admin") nav({ to: "/admin" });
+    else if (a.role === "delivery") nav({ to: a.kycStatus === "approved" ? "/delivery" : "/kyc" });
     else nav({ to: "/" });
   };
 

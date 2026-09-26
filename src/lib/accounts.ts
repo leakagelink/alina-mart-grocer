@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-export type Role = "customer" | "delivery";
+export type Role = "customer" | "delivery" | "admin";
 export type KycStatus = "not_submitted" | "submitted" | "approved" | "rejected";
 export type KycDoc = { label: string; fileName: string; dataUrl: string };
 export type Kyc = {
@@ -33,6 +33,7 @@ const KEY = "alina-accounts-v1";
 const SESSION = "alina-session";
 
 const SEED: Account[] = [
+  { id: "admin1", role: "admin", name: "Admin", phone: "9301499921", password: "Alinamart@123", createdAt: 0 },
   { id: "r1", role: "delivery", name: "Ravi Kumar", phone: "9876543210", password: "ravi123", createdAt: 0, kycStatus: "approved" },
   { id: "r2", role: "delivery", name: "Amit Singh", phone: "9811122233", password: "amit123", createdAt: 0, kycStatus: "approved" },
 ];
@@ -60,7 +61,11 @@ export function hydrateAccounts() {
   loaded = true;
   try {
     const raw = localStorage.getItem(KEY);
-    const accounts = raw ? (JSON.parse(raw) as Account[]) : SEED;
+    let accounts = raw ? (JSON.parse(raw) as Account[]) : SEED;
+    // Purane saved data me admin/rider seeds missing ho to add karo
+    for (const s of SEED) {
+      if (!accounts.some((a) => a.phone === s.phone)) accounts = [...accounts, s];
+    }
     state = { accounts, sessionId: localStorage.getItem(SESSION) };
     ls.forEach((l) => l());
   } catch {
