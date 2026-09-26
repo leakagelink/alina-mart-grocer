@@ -4,7 +4,10 @@ import {
   ArrowLeft,
   Bell,
   Bike,
+  Camera,
   CheckCircle2,
+  HandCoins,
+  Info,
   IndianRupee,
   LogOut,
   MapPin,
@@ -13,16 +16,23 @@ import {
   Phone,
   Power,
   Wallet,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   STATUS_LABEL,
   assignRider,
+  depositCash,
   hydrate,
   inr,
+  requestPayout,
+  returnOrder,
+  setOrderProof,
   setOrderStatus,
   useStore,
+  type CashDeposit,
   type Order,
+  type Payout,
 } from "@/lib/store";
 import { currentAccount, hydrateAccounts, logOut, useAccounts } from "@/lib/accounts";
 
@@ -46,6 +56,12 @@ export const Route = createFileRoute("/delivery")({
 type Rider = { id: string; name: string; phone: string; vehicle: string };
 const PER_DELIVERY = 30;
 const ONLINE_KEY = "alina-rider-online";
+const REASONS = [
+  "Customer ghar par nahi tha",
+  "Address galat tha",
+  "Customer ne order mana kar diya",
+  "Order damaged tha",
+];
 
 const otpFor = (o: Order) => o.customer.phone.replace(/\D/g, "").slice(-4) || "0000";
 
@@ -67,6 +83,21 @@ function beep() {
   } catch {
     /* ignore */
   }
+}
+
+function shrinkPhoto(file: File, done: (dataUrl: string) => void) {
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    const scale = Math.min(1, 640 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(img.width * scale));
+    c.height = Math.max(1, Math.round(img.height * scale));
+    c.getContext("2d")?.drawImage(img, 0, 0, c.width, c.height);
+    done(c.toDataURL("image/jpeg", 0.6));
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
 }
 
 function DeliveryApp() {
@@ -113,8 +144,10 @@ function DeliveryApp() {
 function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
   const state = useStore();
   const [online, setOnline] = useState(true);
-  const [tab, setTab] = useState<"orders" | "earnings">("orders");
+  const [tab, setTab] = useState<"orders" | "cash" | "earnings">("orders");
   const [otpOrder, setOtpOrder] = useState<Order | null>(null);
+  const [detail, setDetail] = useState<Order | null>(null);
+  const [retOrder, setRetOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     setOnline(localStorage.getItem(ONLINE_KEY) !== "0");
@@ -132,8 +165,17 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
   const delivered = mine.filter((o) => o.status === "delivered");
   const today = delivered.filter((o) => Date.now() - o.createdAt < 864e5);
   const week = delivered.filter((o) => Date.now() - o.createdAt < 7 * 864e5);
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const month = delivered.filter((o) => o.createdAt >= monthStart.getTime());
   const codDue = active.filter((o) => o.payment === "cod").reduce((s, o) => s + o.total, 0);
-  const codCollected = today.filter((o) => o.payment === "cod").reduce((s, o) => s + o.total, 0);
+  const codToday = today.filter((o) => o.payment === "cod").reduce((s, o) => s + o.total, 0);
+  const codTotal = delivered.filter((o) => o.payment === "cod").reduce((s, o) => s + o.total, 0);
+  const deposits = useMemo(() => state.cashDeposits.filter((d) => d.rider === rider.name), [state, rider.name]);
+  const deposited = deposits.reduce((s, d) => s + d.amount, 0);
+  const codPending = codTotal - deposited;
+  const payouts = useMemo(() => state.payouts.filter((p) => p.rider === rider.name), [state, rider.name]);
 
   // new order alert
   const prev = useRef(readyList.length);
@@ -182,7 +224,7 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
           </button>
         </div>
         <div className="mx-auto flex w-full max-w-3xl px-4 pb-2">
-          {(["orders", "earnings"] as const).map((t) => (
+          {(["orders", "cash", "earnings"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -190,15 +232,29 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
                 tab === t ? "bg-primary-foreground text-primary" : "opacity-80"
               }`}
             >
-              {t === "orders" ? "Orders" : "Earnings"}
+              {t === "orders" ? "Orders" : t === "cash" ? "Cash" : "Earnings"}
             </button>
           ))}
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-12 pt-4">
-        {tab === "earnings" ? (
-          <Earnings today={today} week={week} codCollected={codCollected} />
+        {tab === "cash" ? (
+          <Cash
+            riderName={rider.name}
+            codToday={codToday}
+            codTotal={codTotal}
+            pending={codPending}
+            deposits={deposits}
+          />
+        ) : tab === "earnings" ? (
+          <Earnings
+            riderName={rider.name}
+            today={today}
+            week={week}
+            month={month}
+            payouts={payouts}
+          />
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -221,6 +277,7 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
                     key={o.id}
                     order={o}
                     delay={i}
+                    onOpen={() => setDetail(o)}
                     action={{ label: "Accept & Pick up", onClick: () => pickup(o), className: "bg-primary text-primary-foreground" }}
                   />
                 ))
@@ -237,6 +294,7 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
                     order={o}
                     delay={i}
                     navigate
+                    onOpen={() => setDetail(o)}
                     action={{
                       label: o.payment === "cod" ? `Deliver • ${inr(o.total)} cash lena hai` : "Deliver (OTP)",
                       onClick: () => setOtpOrder(o),
@@ -244,13 +302,10 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
                     }}
                     extra={
                       <button
-                        onClick={() => {
-                          setOrderStatus(o.id, "packed");
-                          toast("Order wapas store ko diya");
-                        }}
+                        onClick={() => setRetOrder(o)}
                         className="mt-2 w-full text-xs font-bold text-muted-foreground underline"
                       >
-                        Customer nahi mila — return to store
+                        Customer nahi mila? Return karein
                       </button>
                     }
                   />
@@ -261,7 +316,7 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
             {today.length > 0 && (
               <Section title="Aaj delivered" count={today.length}>
                 {today.map((o, i) => (
-                  <OrderCard key={o.id} order={o} delay={i} done />
+                  <OrderCard key={o.id} order={o} delay={i} done onOpen={() => setDetail(o)} />
                 ))}
               </Section>
             )}
@@ -270,6 +325,8 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
       </main>
 
       {otpOrder && <OtpDialog order={otpOrder} onClose={() => setOtpOrder(null)} />}
+      {detail && <OrderDetail order={detail} onClose={() => setDetail(null)} />}
+      {retOrder && <ReturnDialog order={retOrder} onClose={() => setRetOrder(null)} />}
     </div>
   );
 }
@@ -303,9 +360,11 @@ function MapCard({ order }: { order: Order }) {
 function OtpDialog({ order, onClose }: { order: Order; onClose: () => void }) {
   const [otp, setOtp] = useState("");
   const [cash, setCash] = useState(order.payment !== "cod");
+  const [photo, setPhoto] = useState<string | null>(null);
   const confirm = () => {
     if (otp !== otpFor(order)) { toast.error("OTP galat hai"); return; }
     if (!cash) { toast.error("Pehle cash collect confirm karein"); return; }
+    if (photo) setOrderProof(order.id, photo);
     setOrderStatus(order.id, "delivered");
     beep();
     toast.success(`#${order.id} delivered • +${inr(PER_DELIVERY)} kamaye`);
@@ -313,7 +372,7 @@ function OtpDialog({ order, onClose }: { order: Order; onClose: () => void }) {
   };
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 sm:items-center" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="animate-fade-up w-full max-w-sm rounded-t-3xl bg-card p-5 sm:rounded-3xl">
+      <div onClick={(e) => e.stopPropagation()} className="animate-fade-up max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-card p-5 sm:rounded-3xl">
         <h3 className="text-base font-extrabold">Delivery confirm karein</h3>
         <p className="text-xs text-muted-foreground">
           Customer se 4-digit OTP poochiye. (Demo: customer ke phone ke last 4 digit — {otpFor(order)})
@@ -332,6 +391,21 @@ function OtpDialog({ order, onClose }: { order: Order; onClose: () => void }) {
             {inr(order.total)} cash collect kar liya
           </label>
         )}
+        <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-xl border border-dashed p-3 text-sm font-bold">
+          <Camera className="h-4 w-4 text-primary" />
+          {photo ? "Photo attach ho gayi ✓ (badalni ho to dobara choose karein)" : "Delivery photo lein (optional)"}
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) shrinkPhoto(f, setPhoto);
+            }}
+          />
+        </label>
+        {photo && <img src={photo} alt="Delivery proof" className="mt-2 h-24 w-24 rounded-xl object-cover" />}
         <button onClick={confirm} className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
           Delivered
         </button>
@@ -340,7 +414,182 @@ function OtpDialog({ order, onClose }: { order: Order; onClose: () => void }) {
   );
 }
 
-function Earnings({ today, week, codCollected }: { today: Order[]; week: Order[]; codCollected: number }) {
+function ReturnDialog({ order, onClose }: { order: Order; onClose: () => void }) {
+  const [reason, setReason] = useState(REASONS[0]);
+  const [note, setNote] = useState("");
+  const submit = () => {
+    const text = note.trim() ? `${reason} — ${note.trim()}` : reason;
+    returnOrder(order.id, text);
+    toast("Order store wapas gaya — admin ko dikhega");
+    onClose();
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 sm:items-center" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="animate-fade-up w-full max-w-sm rounded-t-3xl bg-card p-5 sm:rounded-3xl">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-extrabold">Return karne ki wajah</h3>
+          <button onClick={onClose} aria-label="Band karein" className="rounded-full bg-muted p-1.5">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="mt-3 space-y-2">
+          {REASONS.map((r) => (
+            <label key={r} className="flex items-center gap-2 rounded-xl border p-3 text-sm font-semibold">
+              <input type="radio" name="reason" checked={reason === r} onChange={() => setReason(r)} />
+              {r}
+            </label>
+          ))}
+        </div>
+        <input
+          value={note}
+          maxLength={150}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Extra detail (optional)"
+          className="mt-3 w-full rounded-xl border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+        />
+        <button onClick={submit} className="mt-4 w-full rounded-xl bg-secondary py-3 text-sm font-extrabold text-secondary-foreground active:scale-95">
+          Order return karein
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function OrderDetail({ order, onClose }: { order: Order; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 sm:items-center" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="animate-fade-up max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-card p-5 sm:rounded-3xl">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-extrabold">Order #{order.id}</h3>
+          <button onClick={onClose} aria-label="Band karein" className="rounded-full bg-muted p-1.5">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="mt-3 space-y-2">
+          {order.items.map((i) => (
+            <div key={i.productId} className="flex items-center justify-between text-sm">
+              <span>{i.emoji} {i.name} × {i.qty}</span>
+              <span className="font-semibold">{inr(i.price * i.qty)}</span>
+            </div>
+          ))}
+          <div className="flex justify-between border-t pt-2 text-sm font-extrabold">
+            <span>Total</span>
+            <span>{inr(order.total)}</span>
+          </div>
+        </div>
+        <div className="mt-3 rounded-xl bg-muted p-3 text-xs text-muted-foreground">
+          <p className="font-bold text-foreground">{order.customer.name} • {order.customer.phone}</p>
+          <p>{order.customer.address}</p>
+          <p className="mt-1 font-bold text-foreground">
+            {order.payment === "cod" ? "COD — cash lena hai" : "Online paid"}
+          </p>
+        </div>
+        {order.note && (
+          <p className="mt-2 rounded-xl bg-accent p-3 text-xs font-semibold text-accent-foreground">Note: {order.note}</p>
+        )}
+        {order.returnReason && (
+          <p className="mt-2 rounded-xl bg-accent p-3 text-xs font-semibold text-accent-foreground">
+            Return wajah: {order.returnReason}
+          </p>
+        )}
+        {order.photo && <img src={order.photo} alt="Delivery proof" className="mt-2 w-full rounded-xl" />}
+      </div>
+    </div>
+  );
+}
+
+function Cash({
+  riderName,
+  codToday,
+  codTotal,
+  pending,
+  deposits,
+}: {
+  riderName: string;
+  codToday: number;
+  codTotal: number;
+  pending: number;
+  deposits: CashDeposit[];
+}) {
+  const [amt, setAmt] = useState("");
+  const submit = () => {
+    const n = Math.round(Number(amt));
+    if (!n || n <= 0) { toast.error("Jama karne ki amount daalein"); return; }
+    if (n > pending) { toast.error("Pending cash se zyada jama nahi ho sakta"); return; }
+    depositCash(riderName, n);
+    setAmt("");
+    toast.success(`${inr(n)} store me jama ho gaya`);
+  };
+  return (
+    <div className="space-y-4">
+      <div className="animate-card-in rounded-3xl bg-primary p-5 text-primary-foreground">
+        <p className="text-xs opacity-80">Store me jama karna hai (COD)</p>
+        <p className="text-3xl font-extrabold">{inr(Math.max(0, pending))}</p>
+        <p className="text-xs opacity-80">Aaj collect: {inr(codToday)} • Total collect: {inr(codTotal)}</p>
+      </div>
+      <div className="animate-card-in rounded-2xl border bg-card p-4">
+        <p className="text-sm font-extrabold">Cash store me jama karein</p>
+        <div className="mt-2 flex gap-2">
+          <input
+            value={amt}
+            onChange={(e) => setAmt(e.target.value.replace(/\D/g, ""))}
+            inputMode="numeric"
+            placeholder="Amount (₹)"
+            className="flex-1 rounded-xl border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <button
+            onClick={() => setAmt(String(Math.max(0, pending)))}
+            className="rounded-xl bg-accent px-3 py-2 text-xs font-bold text-accent-foreground"
+          >
+            Poora
+          </button>
+        </div>
+        <button onClick={submit} className="mt-3 w-full rounded-xl bg-secondary py-2.5 text-sm font-extrabold text-secondary-foreground active:scale-95">
+          Jama karein
+        </button>
+      </div>
+      <Section title="Jama history" count={deposits.length} icon={HandCoins}>
+        {deposits.length === 0 ? (
+          <Empty text="Abhi tak cash jama nahi kiya." />
+        ) : (
+          deposits.map((d) => (
+            <div key={d.id} className="animate-card-in flex items-center justify-between rounded-2xl border bg-card p-3 text-sm">
+              <div>
+                <p className="font-extrabold">{inr(d.amount)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(d.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                </p>
+              </div>
+              <CheckCircle2 className="h-5 w-5 text-primary" />
+            </div>
+          ))
+        )}
+      </Section>
+    </div>
+  );
+}
+
+function Earnings({
+  riderName,
+  today,
+  week,
+  month,
+  payouts,
+}: {
+  riderName: string;
+  today: Order[];
+  week: Order[];
+  month: Order[];
+  payouts: Payout[];
+}) {
+  const weekEarn = week.length * PER_DELIVERY;
+  const [amt, setAmt] = useState(String(weekEarn));
+  const req = () => {
+    const n = Math.round(Number(amt));
+    if (!n || n < 100) { toast.error("Kam se kam ₹100 ki payout request karein"); return; }
+    requestPayout(riderName, n);
+    toast.success("Payout request admin ko bhej di gayi");
+  };
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -358,8 +607,8 @@ function Earnings({ today, week, codCollected }: { today: Order[]; week: Order[]
         <p className="text-xs opacity-80">{today.length} deliveries × {inr(PER_DELIVERY)}</p>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <Stat icon={IndianRupee} label="Is hafte" value={inr(week.length * PER_DELIVERY)} />
-        <Stat icon={Wallet} label="COD jama karna hai (aaj)" value={inr(codCollected)} />
+        <Stat icon={IndianRupee} label="Is hafte" value={inr(weekEarn)} />
+        <Stat icon={Wallet} label="Is mahine" value={inr(month.length * PER_DELIVERY)} />
       </div>
       <div className="animate-card-in rounded-2xl border bg-card p-4">
         <p className="text-sm font-extrabold">Last 7 din</p>
@@ -373,6 +622,41 @@ function Earnings({ today, week, codCollected }: { today: Order[]; week: Order[]
           ))}
         </div>
       </div>
+      <div className="animate-card-in rounded-2xl border bg-card p-4">
+        <p className="text-sm font-extrabold">Payout request</p>
+        <p className="text-xs text-muted-foreground">Kamai bank me bhejne ke liye admin ko request bhejein.</p>
+        <div className="mt-2 flex gap-2">
+          <input
+            value={amt}
+            onChange={(e) => setAmt(e.target.value.replace(/\D/g, ""))}
+            inputMode="numeric"
+            placeholder="Amount (₹)"
+            className="flex-1 rounded-xl border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <button onClick={req} className="rounded-xl bg-primary px-4 py-2 text-xs font-extrabold text-primary-foreground">
+            Request
+          </button>
+        </div>
+      </div>
+      <Section title="Payout history" count={payouts.length} icon={IndianRupee}>
+        {payouts.length === 0 ? (
+          <Empty text="Abhi koi payout request nahi ki." />
+        ) : (
+          payouts.map((p) => (
+            <div key={p.id} className="animate-card-in flex items-center justify-between rounded-2xl border bg-card p-3 text-sm">
+              <div>
+                <p className="font-extrabold">{inr(p.amount)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(p.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                </p>
+              </div>
+              <span className={`rounded-lg px-2 py-1 text-xs font-bold ${p.status === "paid" ? "bg-muted" : "bg-accent text-accent-foreground"}`}>
+                {p.status === "paid" ? "Paid" : "Pending"}
+              </span>
+            </div>
+          ))
+        )}
+      </Section>
     </div>
   );
 }
@@ -410,6 +694,7 @@ function OrderCard({
   action,
   done,
   navigate,
+  onOpen,
   extra,
 }: {
   order: Order;
@@ -417,6 +702,7 @@ function OrderCard({
   action?: { label: string; onClick: () => void; className: string };
   done?: boolean;
   navigate?: boolean;
+  onOpen?: () => void;
   extra?: React.ReactNode;
 }) {
   const q = encodeURIComponent(order.customer.address);
@@ -428,11 +714,26 @@ function OrderCard({
           {done ? "Delivered" : STATUS_LABEL[order.status]}
         </span>
         {!done && <span className="text-xs font-bold text-primary">+{inr(PER_DELIVERY)}</span>}
-        <span className="ml-auto text-sm font-extrabold">{inr(order.total)}</span>
+        <div className="ml-auto flex items-center gap-2">
+          {onOpen && (
+            <button onClick={onOpen} className="flex items-center gap-1 rounded-lg bg-muted px-2 py-1 text-xs font-bold">
+              <Info className="h-3.5 w-3.5" /> Detail
+            </button>
+          )}
+          <span className="text-sm font-extrabold">{inr(order.total)}</span>
+        </div>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
         {order.items.map((i) => `${i.emoji} ${i.name} ×${i.qty}`).join(", ")}
       </p>
+      {order.photo && done && (
+        <p className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-primary">
+          <Camera className="h-3.5 w-3.5" /> Photo proof attached
+        </p>
+      )}
+      {order.returnReason && !done && (
+        <p className="mt-1 text-xs font-semibold text-muted-foreground">Return wajah: {order.returnReason}</p>
+      )}
       <div className="mt-3 flex items-start gap-2 rounded-xl bg-muted p-3">
         <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
