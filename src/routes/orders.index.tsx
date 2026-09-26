@@ -29,6 +29,22 @@ function Orders() {
       <Header />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-8 pt-4">
         <h1 className="text-lg font-bold">My orders</h1>
+        {state.notifications.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {state.notifications.slice(0, 5).map((n) => (
+              <div
+                key={n.id}
+                className="animate-pop rounded-2xl border border-primary/30 bg-accent p-3"
+              >
+                <p className="text-sm font-bold text-accent-foreground">📢 {n.title}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{n.body}</p>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {new Date(n.at).toLocaleString("en-IN")}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
         {state.orders.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             Abhi koi order nahi hai.

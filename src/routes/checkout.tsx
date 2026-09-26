@@ -83,6 +83,14 @@ function Checkout() {
       toast.error("Cart khaali hai");
       return;
     }
+    if (payment === "cod" && !state.settings.codEnabled) {
+      toast.error("COD abhi band hai — online payment chunein");
+      return;
+    }
+    if (payment === "online" && !state.settings.onlineEnabled) {
+      toast.error("Online payment abhi band hai — COD chunein");
+      return;
+    }
     setBusy(true);
     if (payment === "online") {
       await new Promise((r) => setTimeout(r, 1200));
@@ -180,17 +188,19 @@ function Checkout() {
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <button
               onClick={() => setPayment("cod")}
+              disabled={!state.settings.codEnabled}
               className={`flex items-center gap-2 rounded-xl border p-3 text-left text-sm font-semibold ${
                 payment === "cod" ? "border-primary bg-accent text-accent-foreground" : ""
-              }`}
+              } ${!state.settings.codEnabled ? "opacity-40" : ""}`}
             >
               <Banknote className="h-5 w-5 text-primary" /> Cash on Delivery
             </button>
             <button
               onClick={() => setPayment("online")}
+              disabled={!state.settings.onlineEnabled}
               className={`flex items-center gap-2 rounded-xl border p-3 text-left text-sm font-semibold ${
                 payment === "online" ? "border-primary bg-accent text-accent-foreground" : ""
-              }`}
+              } ${!state.settings.onlineEnabled ? "opacity-40" : ""}`}
             >
               <CreditCard className="h-5 w-5 text-secondary" /> Online (UPI / Card)
             </button>

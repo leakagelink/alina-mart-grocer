@@ -6,6 +6,10 @@ import { Header } from "@/components/Header";
 import { RidersKyc } from "@/components/RidersKyc";
 import { UsersAdmin } from "@/components/UsersAdmin";
 import { ShippingPartners } from "@/components/ShippingPartners";
+import { DashboardReports } from "@/components/DashboardReports";
+import { CouponsAdmin } from "@/components/CouponsAdmin";
+import { AppSettingsAdmin } from "@/components/AppSettingsAdmin";
+import { NotificationsAdmin } from "@/components/NotificationsAdmin";
 import { BottomNav } from "@/components/BottomNav";
 import {
   CATEGORIES,
@@ -39,11 +43,35 @@ export const Route = createFileRoute("/admin")({
 
 const STATUSES: OrderStatus[] = ["placed", "packed", "out_for_delivery", "delivered", "cancelled"];
 
+const TABS = [
+  "dashboard",
+  "orders",
+  "products",
+  "coupons",
+  "notifications",
+  "settings",
+  "riders",
+  "users",
+  "shipping",
+] as const;
+type AdminTab = (typeof TABS)[number];
+const TAB_LABELS: Record<AdminTab, string> = {
+  dashboard: "Dashboard",
+  orders: "Orders",
+  products: "Products",
+  coupons: "Coupons",
+  notifications: "Notifications",
+  settings: "App settings",
+  riders: "Delivery KYC",
+  users: "Users",
+  shipping: "Shipping partners",
+};
+
 function Admin() {
   const state = useStore();
   const accState = useAccounts();
   const me = currentAccount(accState);
-  const [tab, setTab] = useState<"orders" | "products" | "riders" | "users" | "shipping">("orders");
+  const [tab, setTab] = useState<AdminTab>("dashboard");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -175,15 +203,15 @@ function Admin() {
         </div>
 
         <div className="hide-scrollbar mt-5 flex gap-2 overflow-x-auto">
-          {(["orders", "products", "riders", "users", "shipping"] as const).map((t) => (
+          {TABS.map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`shrink-0 rounded-xl px-4 py-2 text-sm font-bold capitalize ${
+              className={`shrink-0 rounded-xl px-4 py-2 text-sm font-bold ${
                 tab === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}
             >
-              {t === "riders" ? "Delivery KYC" : t === "users" ? "Users" : t === "shipping" ? "Shipping partners" : t}
+              {TAB_LABELS[t]}
             </button>
           ))}
         </div>
@@ -194,6 +222,14 @@ function Admin() {
           <ShippingPartners />
         ) : tab === "riders" ? (
           <RidersKyc />
+        ) : tab === "dashboard" ? (
+          <DashboardReports />
+        ) : tab === "coupons" ? (
+          <CouponsAdmin />
+        ) : tab === "notifications" ? (
+          <NotificationsAdmin />
+        ) : tab === "settings" ? (
+          <AppSettingsAdmin />
         ) : tab === "orders" ? (
           <div className="mt-4 space-y-3">
             {state.orders.length === 0 && (
