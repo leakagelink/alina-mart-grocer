@@ -66,46 +66,7 @@ function SignupPage() {
   const accState = useAccounts();
   const me = currentAccount(accState);
 
-  if (me) {
-    return (
-      <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
-        <div className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 text-center shadow-2xl">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary/10">
-            <User className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="mt-3 text-xl font-extrabold">{me.name}</h1>
-          <p className="text-sm text-muted-foreground">{me.phone}</p>
-          <p className="mt-1 inline-block rounded-full bg-muted px-3 py-1 text-xs font-bold capitalize">
-            {me.role === "delivery" ? "Delivery Partner" : me.role}
-          </p>
-          <div className="mt-5 space-y-2">
-            {me.role === "admin" && (
-              <Link to="/admin" className="block w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground">
-                Admin Panel
-              </Link>
-            )}
-            {me.role === "delivery" && (
-              <Link to={me.kycStatus === "approved" ? "/delivery" : "/kyc"} className="block w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground">
-                {me.kycStatus === "approved" ? "Delivery Panel" : "KYC Status"}
-              </Link>
-            )}
-            {me.role === "customer" && (
-              <Link to="/orders" className="block w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground">
-                Mere Orders
-              </Link>
-            )}
-            <button
-              onClick={() => { logOut(); toast.success("Logout ho gaya"); }}
-              className="w-full rounded-xl bg-muted py-3 text-sm font-extrabold text-muted-foreground active:scale-95"
-            >
-              Logout
-            </button>
-            <Link to="/" className="block pt-1 text-xs text-muted-foreground underline">Home par wapas</Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (me) return <ProfileView me={me} />;
 
   return (
     <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
