@@ -245,10 +245,10 @@ function AddressesTab({ me, input }: { me: Account; input: string }) {
   const list = me.addresses ?? [];
 
   const startAdd = () => setForm({ id: "a" + Date.now(), label: "Home", line: "", landmark: "", pincode: "", isDefault: list.length === 0 });
-  const save = () => {
+  const save = (): void => {
     if (!form) return;
-    if (form.line.trim().length < 8) return toast.error("Poora address likhiye");
-    if (!/^\d{6}$/.test(form.pincode)) return toast.error("6 digit pincode daaliye");
+    if (form.line.trim().length < 8) { toast.error("Poora address likhiye"); return; }
+    if (!/^\d{6}$/.test(form.pincode)) { toast.error("6 digit pincode daaliye"); return; }
     try {
       saveAddress(me.id, { ...form, line: form.line.trim() });
       setForm(null);
@@ -331,8 +331,8 @@ function PasswordTab({ me, input }: { me: Account; input: string }) {
   const [newPw, setNewPw] = useState("");
   const [confirm, setConfirm] = useState("");
 
-  const save = () => {
-    if (newPw !== confirm) return toast.error("Naya password confirm se match nahi hua");
+  const save = (): void => {
+    if (newPw !== confirm) { toast.error("Naya password confirm se match nahi hua"); return; }
     try {
       changePassword(me.id, oldPw, newPw);
       setOldPw(""); setNewPw(""); setConfirm("");
