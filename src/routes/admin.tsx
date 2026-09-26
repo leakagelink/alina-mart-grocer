@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { IndianRupee, PackageCheck, ShoppingBag, TriangleAlert, Trash2 } from "lucide-react";
+import { IndianRupee, PackageCheck, Pencil, ShoppingBag, TriangleAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { RidersKyc } from "@/components/RidersKyc";
+import { UsersAdmin } from "@/components/UsersAdmin";
+import { ShippingPartners } from "@/components/ShippingPartners";
 import { BottomNav } from "@/components/BottomNav";
 import {
   CATEGORIES,
@@ -41,7 +43,8 @@ function Admin() {
   const state = useStore();
   const accState = useAccounts();
   const me = currentAccount(accState);
-  const [tab, setTab] = useState<"orders" | "products" | "riders">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "riders" | "users" | "shipping">("orders");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [form, setForm] = useState({
@@ -128,7 +131,7 @@ function Admin() {
       return;
     }
     upsertProduct({
-      id: "p" + Date.now().toString().slice(-7),
+      id: editingId ?? "p" + Date.now().toString().slice(-7),
       name: form.name.trim().slice(0, 60),
       category: form.category,
       price,
@@ -137,7 +140,8 @@ function Admin() {
       emoji: form.emoji.trim() || "🛍️",
       stock: Number.isFinite(stock) ? stock : 0,
     });
-    toast.success("Product added");
+    toast.success(editingId ? "Product updated" : "Product added");
+    setEditingId(null);
     setForm({ ...form, name: "", price: "", mrp: "", unit: "", stock: "" });
   };
 
@@ -170,21 +174,25 @@ function Admin() {
           <Stat icon={TriangleAlert} label="Low stock" value={String(stats.low)} />
         </div>
 
-        <div className="mt-5 flex gap-2">
-          {(["orders", "products", "riders"] as const).map((t) => (
+        <div className="hide-scrollbar mt-5 flex gap-2 overflow-x-auto">
+          {(["orders", "products", "riders", "users", "shipping"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-xl px-4 py-2 text-sm font-bold capitalize ${
+              className={`shrink-0 rounded-xl px-4 py-2 text-sm font-bold capitalize ${
                 tab === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}
             >
-              {t === "riders" ? "Riders / KYC" : t}
+              {t === "riders" ? "Delivery KYC" : t === "users" ? "Users" : t === "shipping" ? "Shipping partners" : t}
             </button>
           ))}
         </div>
 
-        {tab === "riders" ? (
+        {tab === "users" ? (
+          <UsersAdmin />
+        ) : tab === "shipping" ? (
+          <ShippingPartners />
+        ) : tab === "riders" ? (
           <RidersKyc />
         ) : tab === "orders" ? (
           <div className="mt-4 space-y-3">
@@ -233,7 +241,7 @@ function Admin() {
         ) : (
           <>
             <div className="mt-4 rounded-2xl border bg-card p-4">
-              <p className="text-sm font-bold">Add new product</p>
+              <p className="text-sm font-bold">{editingId ? "Edit product" : "Add new product"}</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <input
                   className="rounded-xl border bg-background px-3 py-2 text-sm"
@@ -290,8 +298,16 @@ function Admin() {
                 onClick={addProduct}
                 className="mt-3 rounded-xl bg-secondary px-4 py-2 text-sm font-bold text-secondary-foreground"
               >
-                Add product
+                {editingId ? "Save changes" : "Add product"}
               </button>
+              {editingId && (
+                <button
+                  onClick={() => { setEditingId(null); setForm({ ...form, name: "", price: "", mrp: "", unit: "", stock: "" }); }}
+                  className="ml-2 mt-3 rounded-xl bg-muted px-4 py-2 text-sm font-bold text-muted-foreground"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
 
             <div className="mt-4 overflow-x-auto rounded-2xl border bg-card">
@@ -334,9 +350,21 @@ function Admin() {
                           }
                         />
                       </td>
-                      <td className="p-3">
+                      <td className="flex gap-3 p-3">
                         <button
                           onClick={() => {
+                            setEditingId(p.id);
+                            setForm({ name: p.name, category: p.category, price: String(p.price), mrp: String(p.mrp), unit: p.unit, emoji: p.emoji, stock: String(p.stock) });
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                          className="text-muted-foreground hover:text-primary"
+                          aria-label="Edit product"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (!window.confirm(`${p.name} delete karein?`)) return;
                             deleteProduct(p.id);
                             toast.success("Product removed");
                           }}

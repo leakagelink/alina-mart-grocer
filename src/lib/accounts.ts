@@ -36,6 +36,7 @@ export type Account = {
   kycStatus?: KycStatus;
   kyc?: Kyc;
   rejectReason?: string | undefined;
+  blocked?: boolean;
 };
 
 const KEY = "alina-accounts-v1";
@@ -112,6 +113,7 @@ export function signUp(input: { role: Role; name: string; phone: string; passwor
 export function logIn(phone: string, password: string) {
   const a = state.accounts.find((x) => x.phone === phone && x.password === password);
   if (!a) throw new Error("Galat mobile number ya password");
+  if (a.blocked) throw new Error("Ye account admin ne block kiya hai");
   save({ ...state, sessionId: a.id });
   return a;
 }
@@ -170,4 +172,15 @@ export function setDefaultAddress(id: string, addrId: string) {
   const a = state.accounts.find((x) => x.id === id);
   if (!a) return;
   patch(id, { addresses: (a.addresses ?? []).map((x) => ({ ...x, isDefault: x.id === addrId })) });
+}
+
+export function setBlocked(id: string, blocked: boolean) {
+  patch(id, { blocked });
+}
+export function resetPassword(id: string, pw: string) {
+  if (pw.length < 6) throw new Error("Password kam se kam 6 characters");
+  patch(id, { password: pw });
+}
+export function deleteAccount(id: string) {
+  save({ accounts: state.accounts.filter((a) => a.id !== id), sessionId: state.sessionId === id ? null : state.sessionId });
 }

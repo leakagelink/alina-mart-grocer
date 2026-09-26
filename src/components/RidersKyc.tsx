@@ -18,11 +18,25 @@ const LABEL: Record<string, string> = {
 export function RidersKyc() {
   const s = useAccounts();
   useEffect(() => { hydrateAccounts(); }, []);
-  const riders = s.accounts
-    .filter((a) => a.role === "delivery")
+  const [f, setF] = useState<string>("all");
+  const all = s.accounts.filter((a) => a.role === "delivery");
+  const riders = all
+    .filter((a) => f === "all" || (a.kycStatus ?? "not_submitted") === f)
     .sort((a, b) => Number(b.kycStatus === "submitted") - Number(a.kycStatus === "submitted"));
-  if (!riders.length) return <p className="py-10 text-center text-sm text-muted-foreground">Koi delivery partner nahi</p>;
-  return <div className="mt-4 space-y-3">{riders.map((r) => <RiderCard key={r.id} r={r} />)}</div>;
+  return (
+    <div className="mt-4">
+      <div className="hide-scrollbar flex gap-2 overflow-x-auto">
+        {["all", "submitted", "approved", "rejected", "not_submitted"].map((k) => (
+          <button key={k} onClick={() => setF(k)}
+            className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${f === k ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+            {k === "all" ? "All" : LABEL[k]} ({k === "all" ? all.length : all.filter((a) => (a.kycStatus ?? "not_submitted") === k).length})
+          </button>
+        ))}
+      </div>
+      {riders.length ? <div className="mt-3 space-y-3">{riders.map((r) => <RiderCard key={r.id} r={r} />)}</div>
+        : <p className="py-10 text-center text-sm text-muted-foreground">Koi delivery partner nahi</p>}
+    </div>
+  );
 }
 
 function RiderCard({ r }: { r: Account }) {
@@ -64,7 +78,8 @@ function RiderCard({ r }: { r: Account }) {
               </button>
             ))}
           </div>
-          {st === "submitted" && (
+          {r.rejectReason && st === "rejected" && <p className="text-xs text-destructive">Reason: {r.rejectReason}</p>}
+          {(st === "submitted" || st === "rejected") && (
             <div className="flex gap-2">
               <button onClick={() => { approveKyc(r.id); toast.success(`${r.name} approved — ab orders milenge`); }}
                 className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-extrabold text-primary-foreground active:scale-95">Approve</button>
