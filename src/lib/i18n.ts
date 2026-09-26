@@ -54,6 +54,18 @@ const dict = {
   "cat.bakery": { en: "Bakery", hi: "बेकरी" },
   "cat.beverages": { en: "Beverages", hi: "पेय पदार्थ" },
   "cat.household": { en: "Household", hi: "घरेलू सामान" },
+  bestsellers: { en: "Bestsellers", hi: "सबसे ज़्यादा बिकने वाले" },
+  topDeals: { en: "Today's top deals", hi: "आज के टॉप ऑफ़र" },
+  viewAll: { en: "View all", hi: "सभी देखें" },
+  b1t: { en: "Fresh veggies, daily", hi: "ताज़ी सब्ज़ियाँ, रोज़" },
+  b1b: { en: "Farm-fresh produce at mandi prices", hi: "मंडी भाव पर ताज़ा सामान" },
+  b2t: { en: "Free delivery", hi: "मुफ़्त डिलीवरी" },
+  b3t: { en: "Dairy & breakfast", hi: "डेयरी और नाश्ता" },
+  b3b: { en: "Milk, bread, eggs — before your chai", hi: "दूध, ब्रेड, अंडे — चाय से पहले" },
+  whyFresh: { en: "100% fresh guarantee", hi: "100% ताज़गी की गारंटी" },
+  whyFast: { en: "15-minute delivery", hi: "15 मिनट में डिलीवरी" },
+  whyPrice: { en: "Best prices daily", hi: "रोज़ सबसे अच्छे दाम" },
+  shopNow: { en: "Shop now", hi: "अभी खरीदें" },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type TKey = keyof typeof dict;
