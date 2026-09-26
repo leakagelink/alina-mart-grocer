@@ -205,7 +205,7 @@ function Admin() {
           <Stat icon={TriangleAlert} label="Low stock" value={String(stats.low)} />
         </div>
 
-        <div className="hide-scrollbar sticky top-[104px] z-20 -mx-3 mt-4 flex gap-2 overflow-x-auto bg-background px-3 py-2 sm:static sm:mx-0 sm:px-0">
+        <div className="hide-scrollbar -mx-3 mt-4 flex gap-2 overflow-x-auto px-3 py-1 sm:mx-0 sm:px-0">
           {TABS.map((t) => (
             <button
               key={t}
