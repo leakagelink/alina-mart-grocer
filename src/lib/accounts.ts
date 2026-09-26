@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { adminDeleteUser, adminResetPassword } from "@/lib/admin-users.functions";
 
 export type Role = "customer" | "delivery" | "admin";
 export type KycStatus = "not_submitted" | "submitted" | "approved" | "rejected";
@@ -19,7 +21,7 @@ export type Kyc = {
 };
 export type Address = {
   id: string;
-  label: string; // Home / Office / Other
+  label: string;
   line: string;
   landmark?: string;
   pincode: string;
@@ -30,7 +32,6 @@ export type Account = {
   role: Role;
   name: string;
   phone: string;
-  password: string;
   createdAt: number;
   addresses?: Address[];
   kycStatus?: KycStatus;
@@ -39,48 +40,75 @@ export type Account = {
   blocked?: boolean;
 };
 
-const KEY = "alina-accounts-v1";
-const SESSION = "alina-session";
-
-const SEED: Account[] = [
-  { id: "admin1", role: "admin", name: "Admin", phone: "9301499921", password: "Alinamart@123", createdAt: 0 },
-  { id: "r1", role: "delivery", name: "Ravi Kumar", phone: "9876543210", password: "ravi123", createdAt: 0, kycStatus: "approved" },
-  { id: "r2", role: "delivery", name: "Amit Singh", phone: "9811122233", password: "amit123", createdAt: 0, kycStatus: "approved" },
-];
-
-type S = { accounts: Account[]; sessionId: string | null };
-let state: S = { accounts: SEED, sessionId: null };
-let loaded = false;
+type S = { accounts: Account[]; sessionId: string | null; ready: boolean };
+let state: S = { accounts: [], sessionId: null, ready: false };
+let started = false;
 const ls = new Set<() => void>();
+const authListeners = new Set<() => void>();
 
-function save(next: S) {
+function setState(next: S) {
   state = next;
-  try {
-    localStorage.setItem(KEY, JSON.stringify(state.accounts));
-    if (state.sessionId) localStorage.setItem(SESSION, state.sessionId);
-    else localStorage.removeItem(SESSION);
-  } catch {
-    /* storage full (large docs) */
-    throw new Error("Storage full — chhoti photo upload kariye");
-  }
   ls.forEach((l) => l());
 }
 
-export function hydrateAccounts() {
-  if (loaded) return;
-  loaded = true;
-  try {
-    const raw = localStorage.getItem(KEY);
-    let accounts = raw ? (JSON.parse(raw) as Account[]) : SEED;
-    // Purane saved data me admin/rider seeds missing ho to add karo
-    for (const s of SEED) {
-      if (!accounts.some((a) => a.phone === s.phone)) accounts = [...accounts, s];
-    }
-    state = { accounts, sessionId: localStorage.getItem(SESSION) };
-    ls.forEach((l) => l());
-  } catch {
-    /* ignore */
+export function onAuthChanged(fn: () => void) {
+  authListeners.add(fn);
+  return () => authListeners.delete(fn);
+}
+
+const emailFor = (phone: string) => `${phone}@alinamart.app`;
+
+async function loadAccounts(sessionId: string | null) {
+  if (!sessionId) {
+    setState({ accounts: [], sessionId: null, ready: true });
+    return;
   }
+  const [{ data: profiles }, { data: roles }] = await Promise.all([
+    supabase.from("profiles").select("*"),
+    supabase.from("user_roles").select("user_id, role"),
+  ]);
+  const roleOf = (id: string): Role => {
+    const r = (roles ?? []).filter((x) => x.user_id === id).map((x) => x.role as Role);
+    return r.includes("admin") ? "admin" : r.includes("delivery") ? "delivery" : "customer";
+  };
+  const accounts: Account[] = (profiles ?? []).map((p: any) => ({
+    id: p.id,
+    role: roleOf(p.id),
+    name: p.name,
+    phone: p.phone,
+    createdAt: new Date(p.created_at).getTime(),
+    addresses: (p.addresses ?? []) as Address[],
+    kycStatus: (p.kyc_status ?? undefined) as KycStatus | undefined,
+    kyc: (p.kyc ?? undefined) as Kyc | undefined,
+    rejectReason: p.reject_reason ?? undefined,
+    blocked: p.blocked,
+  }));
+  setState({ accounts, sessionId, ready: true });
+}
+
+export function reloadAccounts() {
+  return loadAccounts(state.sessionId);
+}
+
+export function hydrateAccounts() {
+  if (started || typeof window === "undefined") return;
+  started = true;
+  supabase.auth.getSession().then(({ data }) => loadAccounts(data.session?.user.id ?? null));
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "TOKEN_REFRESHED") return;
+    const id = session?.user.id ?? null;
+    if (id === state.sessionId && event === "INITIAL_SESSION") return;
+    setTimeout(() => {
+      loadAccounts(id);
+      authListeners.forEach((f) => f());
+    }, 0);
+  });
+  supabase
+    .channel("profiles-rt")
+    .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => {
+      if (state.sessionId) loadAccounts(state.sessionId);
+    })
+    .subscribe();
 }
 
 export function useAccounts() {
@@ -98,89 +126,109 @@ export function currentAccount(s: S) {
   return s.accounts.find((a) => a.id === s.sessionId) ?? null;
 }
 
-export function signUp(input: { role: Role; name: string; phone: string; password: string }) {
-  if (state.accounts.some((a) => a.phone === input.phone)) throw new Error("Ye number pehle se registered hai");
-  const acc: Account = {
-    id: "u" + Date.now(),
-    ...input,
-    createdAt: Date.now(),
-    ...(input.role === "delivery" ? { kycStatus: "not_submitted" as KycStatus } : {}),
-  };
-  save({ accounts: [...state.accounts, acc], sessionId: acc.id });
-  return acc;
+function msg(e: { message: string }) {
+  const m = e.message.toLowerCase();
+  if (m.includes("already registered") || m.includes("already been registered")) return "Ye number pehle se registered hai";
+  if (m.includes("invalid login")) return "Galat mobile number ya password";
+  return e.message;
 }
 
-export function logIn(phone: string, password: string) {
-  const a = state.accounts.find((x) => x.phone === phone && x.password === password);
-  if (!a) throw new Error("Galat mobile number ya password");
-  if (a.blocked) throw new Error("Ye account admin ne block kiya hai");
-  save({ ...state, sessionId: a.id });
+export async function signUp(input: { role: Role; name: string; phone: string; password: string }) {
+  if (input.role === "admin") throw new Error("Not allowed");
+  const { data, error } = await supabase.auth.signUp({
+    email: emailFor(input.phone),
+    password: input.password,
+    options: { data: { name: input.name, phone: input.phone, role: input.role } },
+  });
+  if (error) throw new Error(msg(error));
+  if (!data.session) throw new Error("Account ban gaya, ab login kariye");
+  await loadAccounts(data.session.user.id);
+  return currentAccount(state)!;
+}
+
+export async function logIn(phone: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email: emailFor(phone), password });
+  if (error) throw new Error(msg(error));
+  await loadAccounts(data.user.id);
+  const a = currentAccount(state);
+  if (!a) throw new Error("Account nahi mila");
+  if (a.blocked) {
+    await supabase.auth.signOut();
+    throw new Error("Ye account admin ne block kiya hai");
+  }
   return a;
 }
 
-export function logOut() {
-  save({ ...state, sessionId: null });
+export async function logOut() {
+  await supabase.auth.signOut();
+  setState({ accounts: [], sessionId: null, ready: true });
 }
 
-function patch(id: string, p: Partial<Account>) {
-  save({ ...state, accounts: state.accounts.map((a) => (a.id === id ? { ...a, ...p } : a)) });
+async function patch(id: string, p: Record<string, unknown>) {
+  const { error } = await supabase.from("profiles").update(p as never).eq("id", id);
+  if (error) throw new Error(error.message);
+  await loadAccounts(state.sessionId);
 }
 
 export function submitKyc(id: string, kyc: Kyc) {
-  patch(id, { kyc, kycStatus: "submitted", rejectReason: undefined });
+  return patch(id, { kyc, kyc_status: "submitted" });
 }
 export function approveKyc(id: string) {
-  patch(id, { kycStatus: "approved", rejectReason: undefined });
+  return patch(id, { kyc_status: "approved", reject_reason: null });
 }
 export function rejectKyc(id: string, reason: string) {
-  patch(id, { kycStatus: "rejected", rejectReason: reason });
+  return patch(id, { kyc_status: "rejected", reject_reason: reason });
 }
 
 export function updateProfile(id: string, p: { name: string }) {
   if (p.name.trim().length < 2) throw new Error("Naam kam se kam 2 characters ka hona chahiye");
-  patch(id, { name: p.name.trim().slice(0, 60) });
+  return patch(id, { name: p.name.trim().slice(0, 60) });
 }
 
-export function changePassword(id: string, oldPw: string, newPw: string) {
+export async function changePassword(id: string, oldPw: string, newPw: string) {
   const a = state.accounts.find((x) => x.id === id);
   if (!a) throw new Error("Account nahi mila");
-  if (a.password !== oldPw) throw new Error("Purana password galat hai");
   if (newPw.length < 6) throw new Error("Naya password kam se kam 6 characters ka hona chahiye");
-  patch(id, { password: newPw });
+  const { error: e1 } = await supabase.auth.signInWithPassword({ email: emailFor(a.phone), password: oldPw });
+  if (e1) throw new Error("Purana password galat hai");
+  const { error } = await supabase.auth.updateUser({ password: newPw, current_password: oldPw } as never);
+  if (error) throw new Error(error.message);
+}
+
+function addrs(id: string) {
+  const a = state.accounts.find((x) => x.id === id);
+  if (!a) throw new Error("Account nahi mila");
+  return a.addresses ?? [];
 }
 
 export function saveAddress(id: string, addr: Address) {
-  const a = state.accounts.find((x) => x.id === id);
-  if (!a) throw new Error("Account nahi mila");
-  const list = a.addresses ?? [];
+  const list = addrs(id);
   const isFirst = list.length === 0;
-  const next = addr.isDefault || isFirst
-    ? [...list.filter((x) => x.id !== addr.id).map((x) => ({ ...x, isDefault: false })), { ...addr, isDefault: true }]
-    : [...list.filter((x) => x.id !== addr.id), addr];
-  patch(id, { addresses: next });
+  const next =
+    addr.isDefault || isFirst
+      ? [...list.filter((x) => x.id !== addr.id).map((x) => ({ ...x, isDefault: false })), { ...addr, isDefault: true }]
+      : [...list.filter((x) => x.id !== addr.id), addr];
+  return patch(id, { addresses: next });
 }
 
 export function deleteAddress(id: string, addrId: string) {
-  const a = state.accounts.find((x) => x.id === id);
-  if (!a) return;
-  const next = (a.addresses ?? []).filter((x) => x.id !== addrId);
+  const next = addrs(id).filter((x) => x.id !== addrId);
   if (next.length > 0 && !next.some((x) => x.isDefault)) next[0] = { ...next[0]!, isDefault: true };
-  patch(id, { addresses: next });
+  return patch(id, { addresses: next });
 }
 
 export function setDefaultAddress(id: string, addrId: string) {
-  const a = state.accounts.find((x) => x.id === id);
-  if (!a) return;
-  patch(id, { addresses: (a.addresses ?? []).map((x) => ({ ...x, isDefault: x.id === addrId })) });
+  return patch(id, { addresses: addrs(id).map((x) => ({ ...x, isDefault: x.id === addrId })) });
 }
 
 export function setBlocked(id: string, blocked: boolean) {
-  patch(id, { blocked });
+  return patch(id, { blocked });
 }
-export function resetPassword(id: string, pw: string) {
+export async function resetPassword(id: string, pw: string) {
   if (pw.length < 6) throw new Error("Password kam se kam 6 characters");
-  patch(id, { password: pw });
+  await adminResetPassword({ data: { id, password: pw } });
 }
-export function deleteAccount(id: string) {
-  save({ accounts: state.accounts.filter((a) => a.id !== id), sessionId: state.sessionId === id ? null : state.sessionId });
+export async function deleteAccount(id: string) {
+  await adminDeleteUser({ data: { id } });
+  await loadAccounts(state.sessionId);
 }
