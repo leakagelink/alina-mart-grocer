@@ -5,13 +5,14 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Header } from "@/components/Header";
 import {
-  DELIVERY_FEE,
-  FREE_DELIVERY_ABOVE,
   cartSubtotal,
+  deliveryFeeFor,
   hydrate,
   inr,
   placeOrder,
   useStore,
+  validateCoupon,
+  type AppliedCoupon,
 } from "@/lib/store";
 
 export const Route = createFileRoute("/checkout")({
@@ -44,13 +45,33 @@ function Checkout() {
   const [note, setNote] = useState("");
   const [payment, setPayment] = useState<"cod" | "online">("cod");
   const [busy, setBusy] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState<{ code: string; discount: number; freeDelivery?: boolean } | null>(
+    null,
+  );
 
   useEffect(() => {
     hydrate();
   }, []);
 
   const subtotal = cartSubtotal(state);
-  const fee = subtotal >= FREE_DELIVERY_ABOVE || subtotal === 0 ? 0 : DELIVERY_FEE;
+  const fee = deliveryFeeFor(state, subtotal, coupon?.freeDelivery ?? false);
+  const toPay = Math.max(0, subtotal + fee - (coupon?.discount ?? 0));
+
+  const applyCoupon = () => {
+    if (!couponInput.trim()) return;
+    const res = validateCoupon(couponInput, subtotal);
+    if (!res.ok) {
+      toast.error(res.message);
+      return;
+    }
+    setCoupon({
+      code: res.code!,
+      discount: res.discount,
+      ...(res.freeDelivery ? { freeDelivery: true } : {}),
+    });
+    toast.success(res.message);
+  };
 
   const submit = async () => {
     const parsed = schema.safeParse(form);
@@ -62,11 +83,31 @@ function Checkout() {
       toast.error("Cart khaali hai");
       return;
     }
+    if (payment === "cod" && !state.settings.codEnabled) {
+      toast.error("COD abhi band hai — online payment chunein");
+      return;
+    }
+    if (payment === "online" && !state.settings.onlineEnabled) {
+      toast.error("Online payment abhi band hai — COD chunein");
+      return;
+    }
     setBusy(true);
     if (payment === "online") {
       await new Promise((r) => setTimeout(r, 1200));
     }
-    const order = placeOrder({ customer: parsed.data, payment, ...(note.trim() ? { note: note.trim() } : {}) });
+    const appliedCoupon: AppliedCoupon | undefined = coupon
+      ? {
+          code: coupon.code,
+          discount: coupon.discount,
+          ...(coupon.freeDelivery ? { freeDelivery: true } : {}),
+        }
+      : undefined;
+    const order = placeOrder({
+      customer: parsed.data,
+      payment,
+      ...(note.trim() ? { note: note.trim() } : {}),
+      ...(appliedCoupon ? { coupon: appliedCoupon } : {}),
+    });
     setBusy(false);
     if (!order) return;
     toast.success(payment === "online" ? "Payment successful" : "Order placed — COD");
@@ -114,22 +155,52 @@ function Checkout() {
           />
         </div>
 
+        <div className="animate-fade-up mt-4 rounded-2xl border bg-card p-4">
+          <p className="text-sm font-bold">Have a coupon?</p>
+          {coupon ? (
+            <div className="mt-2 flex items-center justify-between rounded-xl bg-accent px-3 py-2">
+              <span className="text-sm font-bold text-accent-foreground">🎟️ {coupon.code} applied</span>
+              <button onClick={() => setCoupon(null)} className="text-xs font-bold text-destructive">
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="mt-2 flex gap-2">
+              <input
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                placeholder="Coupon code (e.g. FIRST50)"
+                maxLength={15}
+                className="flex-1 rounded-xl border bg-background px-3 py-2.5 text-sm uppercase outline-none focus:ring-2 focus:ring-ring"
+              />
+              <button
+                onClick={applyCoupon}
+                className="rounded-xl bg-secondary px-4 py-2 text-sm font-bold text-secondary-foreground active:scale-95"
+              >
+                Apply
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="mt-4 rounded-2xl border bg-card p-4">
           <p className="text-sm font-bold">Payment method</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <button
               onClick={() => setPayment("cod")}
+              disabled={!state.settings.codEnabled}
               className={`flex items-center gap-2 rounded-xl border p-3 text-left text-sm font-semibold ${
                 payment === "cod" ? "border-primary bg-accent text-accent-foreground" : ""
-              }`}
+              } ${!state.settings.codEnabled ? "opacity-40" : ""}`}
             >
               <Banknote className="h-5 w-5 text-primary" /> Cash on Delivery
             </button>
             <button
               onClick={() => setPayment("online")}
+              disabled={!state.settings.onlineEnabled}
               className={`flex items-center gap-2 rounded-xl border p-3 text-left text-sm font-semibold ${
                 payment === "online" ? "border-primary bg-accent text-accent-foreground" : ""
-              }`}
+              } ${!state.settings.onlineEnabled ? "opacity-40" : ""}`}
             >
               <CreditCard className="h-5 w-5 text-secondary" /> Online (UPI / Card)
             </button>
@@ -150,9 +221,15 @@ function Checkout() {
             <span className="text-muted-foreground">Delivery fee</span>
             <span className="font-semibold">{fee === 0 ? "FREE" : inr(fee)}</span>
           </div>
+          {coupon && (
+            <div className="mt-2 flex justify-between text-primary">
+              <span>Coupon ({coupon.code})</span>
+              <span className="font-semibold">− {inr(coupon.discount)}</span>
+            </div>
+          )}
           <div className="mt-3 flex justify-between border-t pt-3 text-base font-bold">
             <span>To pay</span>
-            <span>{inr(subtotal + fee)}</span>
+            <span>{inr(toPay)}</span>
           </div>
         </div>
 
@@ -162,7 +239,7 @@ function Checkout() {
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-secondary py-3 text-sm font-bold text-secondary-foreground disabled:opacity-60"
         >
           {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-          {payment === "cod" ? "Place order (COD)" : `Pay ${inr(subtotal + fee)}`}
+          {payment === "cod" ? "Place order (COD)" : `Pay ${inr(toPay)}`}
         </button>
       </main>
     </div>

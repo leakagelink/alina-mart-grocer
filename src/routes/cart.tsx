@@ -4,11 +4,10 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import {
-  DELIVERY_FEE,
-  FREE_DELIVERY_ABOVE,
   addToCart,
   cartSubtotal,
   clearCart,
+  deliveryFeeFor,
   hydrate,
   inr,
   removeOne,
@@ -38,7 +37,7 @@ function CartPage() {
   }, []);
 
   const subtotal = cartSubtotal(state);
-  const fee = subtotal >= FREE_DELIVERY_ABOVE || subtotal === 0 ? 0 : DELIVERY_FEE;
+  const fee = deliveryFeeFor(state, subtotal);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -112,7 +111,7 @@ function CartPage() {
               </div>
               {fee > 0 && (
                 <p className="mt-2 text-xs text-secondary">
-                  {inr(FREE_DELIVERY_ABOVE - subtotal)} {t("addMoreFree")}
+                  {inr(state.settings.freeDeliveryAbove - subtotal)} {t("addMoreFree")}
                 </p>
               )}
               <div className="mt-3 flex justify-between border-t pt-3 text-base font-bold">

@@ -67,6 +67,12 @@ function Home() {
           </span>
         </section>
 
+        {state.settings.announcement && (
+          <div className="animate-pop mt-3 rounded-2xl border border-primary/30 bg-card p-3 text-center text-sm font-semibold text-primary">
+            📣 {state.settings.announcement}
+          </div>
+        )}
+
         <h2 className="mb-2 mt-6 text-base font-bold">{t("shopByCat")}</h2>
         <div className="hide-scrollbar flex gap-3 overflow-x-auto pb-1">
           <button
