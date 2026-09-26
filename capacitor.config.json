@@ -3,7 +3,7 @@
   "appName": "Alina Mart",
   "webDir": "www",
   "server": {
-    "url": "https://alina-mart-grocer.lovable.app",
+    "url": "https://alinamart.store",
     "cleartext": false
   },
   "android": {
