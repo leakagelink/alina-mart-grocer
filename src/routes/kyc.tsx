@@ -106,7 +106,7 @@ function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name:
     const missing = DOCS.filter((d) => !docs[d]);
     if (missing.length) return toast.error(`Upload kariye: ${missing[0]}`);
     try {
-      submitKyc(accId, { ...f, pan: f.pan.toUpperCase(), ifsc: f.ifsc.toUpperCase(), docs: DOCS.map((d) => docs[d]!), submittedAt: Date.now() });
+      await submitKyc(accId, { ...f, pan: f.pan.toUpperCase(), ifsc: f.ifsc.toUpperCase(), docs: DOCS.map((d) => docs[d]!), submittedAt: Date.now() });
       toast.success("KYC submit ho gaya! Admin approval ka intezaar kariye");
     } catch (err) { toast.error((err as Error).message); }
 

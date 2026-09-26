@@ -40,7 +40,7 @@ function SignupPage() {
     e.preventDefault();
     run();
   };
-  const run = (): unknown => {
+  const run = async (): Promise<unknown> => {
     void 0;
     const ph = phone.trim();
     if (!/^\d{10}$/.test(ph)) return toast.error("10 digit mobile number daaliye");
@@ -48,11 +48,11 @@ function SignupPage() {
     try {
       if (mode === "signup") {
         if (name.trim().length < 2) return toast.error("Naam daaliye");
-        const a = signUp({ role, name: name.trim().slice(0, 60), phone: ph, password });
+        const a = await signUp({ role, name: name.trim().slice(0, 60), phone: ph, password });
         toast.success(role === "delivery" ? "Account ban gaya! Ab KYC complete kariye" : "Welcome to Alina Mart!");
         go(a);
       } else {
-        const a = logIn(ph, password);
+        const a = await logIn(ph, password);
         toast.success(`Welcome ${a.name}!`);
         go(a);
       }
@@ -181,7 +181,7 @@ function ProfileView({ me }: { me: Account }) {
         </div>
 
         <button
-          onClick={() => { logOut(); toast.success("Logout ho gaya"); }}
+          onClick={async () => { await logOut(); toast.success("Logout ho gaya"); }}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-card py-3 text-sm font-extrabold text-destructive shadow-xl active:scale-95"
         >
           <LogOut className="h-4 w-4" /> Logout
@@ -203,9 +203,9 @@ function ProfileTab({ me, input }: { me: Account; input: string }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(me.name);
 
-  const save = () => {
+  const save = async () => {
     try {
-      updateProfile(me.id, { name });
+      await updateProfile(me.id, { name });
       setEditing(false);
       toast.success("Profile update ho gaya");
     } catch (e) { toast.error((e as Error).message); }
@@ -253,7 +253,7 @@ function AddressesTab({ me, input }: { me: Account; input: string }) {
     if (form.line.trim().length < 8) { toast.error("Poora address likhiye"); return; }
     if (!/^\d{6}$/.test(form.pincode)) { toast.error("6 digit pincode daaliye"); return; }
     try {
-      saveAddress(me.id, { ...form, line: form.line.trim() });
+      await saveAddress(me.id, { ...form, line: form.line.trim() });
       setForm(null);
       toast.success("Address save ho gaya");
     } catch (e) { toast.error((e as Error).message); }
@@ -337,7 +337,7 @@ function PasswordTab({ me, input }: { me: Account; input: string }) {
   const save = (): void => {
     if (newPw !== confirm) { toast.error("Naya password confirm se match nahi hua"); return; }
     try {
-      changePassword(me.id, oldPw, newPw);
+      await changePassword(me.id, oldPw, newPw);
       setOldPw(""); setNewPw(""); setConfirm("");
       toast.success("Password badal gaya");
     } catch (e) { toast.error((e as Error).message); }

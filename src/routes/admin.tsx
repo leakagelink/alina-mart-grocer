@@ -131,12 +131,12 @@ function Admin() {
       <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
         <BackButton floating />
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             try {
-              const a = logIn(phone.trim(), password);
+              const a = await logIn(phone.trim(), password);
               if (a.role !== "admin") {
-                logOut();
+                await logOut();
                 toast.error("Ye admin account nahi hai");
                 return;
               }
