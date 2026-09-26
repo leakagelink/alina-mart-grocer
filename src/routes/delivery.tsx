@@ -24,6 +24,7 @@ import {
   useStore,
   type Order,
 } from "@/lib/store";
+import { currentAccount, hydrateAccounts, logOut, useAccounts } from "@/lib/accounts";
 
 export const Route = createFileRoute("/delivery")({
   head: () => ({
@@ -42,12 +43,7 @@ export const Route = createFileRoute("/delivery")({
   component: DeliveryApp,
 });
 
-type Rider = { id: string; name: string; phone: string; vehicle: string; pin: string };
-const RIDERS: Rider[] = [
-  { id: "r1", name: "Ravi Kumar", phone: "9876543210", vehicle: "EV Scooter • DL 3S AB 1234", pin: "1234" },
-  { id: "r2", name: "Amit Singh", phone: "9811122233", vehicle: "Bike • DL 5C XY 9087", pin: "1111" },
-  { id: "r3", name: "Salman Khan", phone: "9899988877", vehicle: "EV Cycle • —", pin: "2222" },
-];
+type Rider = { id: string; name: string; phone: string; vehicle: string };
 const PER_DELIVERY = 30;
 const SESSION_KEY = "alina-rider";
 const ONLINE_KEY = "alina-rider-online";
@@ -75,99 +71,44 @@ function beep() {
 }
 
 function DeliveryApp() {
-  const [rider, setRider] = useState<Rider | null>(null);
+  const acc = useAccounts();
   const [ready, setReady] = useState(false);
-
   useEffect(() => {
     hydrate();
-    const id = localStorage.getItem(SESSION_KEY);
-    setRider(RIDERS.find((r) => r.id === id) ?? null);
+    hydrateAccounts();
     setReady(true);
   }, []);
-
+  const me = currentAccount(acc);
   if (!ready) return null;
-  if (!rider)
+  if (!me || me.role !== "delivery")
     return (
-      <Login
-        onLogin={(r) => {
-          localStorage.setItem(SESSION_KEY, r.id);
-          setRider(r);
-        }}
-      />
+      <div className="flex min-h-screen items-center justify-center bg-primary p-4">
+        <div className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 text-center shadow-2xl">
+          <Bike className="mx-auto h-10 w-10 text-primary" />
+          <h1 className="mt-2 text-xl font-extrabold">Alina Mart Rider</h1>
+          <p className="text-sm text-muted-foreground">Delivery partner account se login ya sign up kariye</p>
+          <Link to="/signup" className="mt-4 block rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground">Sign up / Login</Link>
+          <p className="mt-3 text-[11px] text-muted-foreground">Demo rider: 9876543210 / PIN 1234</p>
+        </div>
+      </div>
     );
-  return (
-    <Panel
-      rider={rider}
-      onLogout={() => {
-        localStorage.removeItem(SESSION_KEY);
-        setRider(null);
-      }}
-    />
-  );
-}
-
-function Login({ onLogin }: { onLogin: (r: Rider) => void }) {
-  const [phone, setPhone] = useState("");
-  const [pin, setPin] = useState("");
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const r = RIDERS.find((x) => x.phone === phone.trim() && x.pin === pin.trim());
-    if (!r) { toast.error("Galat phone ya PIN"); return; }
-    toast.success(`Welcome ${r.name}!`);
-    onLogin(r);
+  if (me.kycStatus !== "approved")
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-primary p-4">
+        <div className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 text-center shadow-2xl">
+          <p className="text-lg font-extrabold">KYC approval zaroori hai</p>
+          <p className="text-sm text-muted-foreground">Admin se KYC approve hone ke baad hi orders milenge.</p>
+          <Link to="/kyc" className="mt-4 block rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground">KYC status dekhiye</Link>
+        </div>
+      </div>
+    );
+  const rider: Rider = {
+    id: me.id,
+    name: me.name,
+    phone: me.phone,
+    vehicle: me.kyc ? `${me.kyc.vehicleType} • ${me.kyc.vehicleNumber}` : "Bike",
   };
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-primary p-4">
-      <form onSubmit={submit} className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 shadow-2xl">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <Bike className="h-7 w-7" />
-        </div>
-        <h1 className="mt-3 text-center text-xl font-extrabold">Alina Mart Rider</h1>
-        <p className="text-center text-xs text-muted-foreground">Delivery partner login</p>
-        <label className="mt-5 block text-xs font-bold">Mobile number</label>
-        <input
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          inputMode="numeric"
-          maxLength={10}
-          className="mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm"
-          placeholder="10 digit number"
-        />
-        <label className="mt-3 block text-xs font-bold">PIN</label>
-        <input
-          value={pin}
-          onChange={(e) => setPin(e.target.value)}
-          type="password"
-          inputMode="numeric"
-          maxLength={4}
-          className="mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm"
-          placeholder="4 digit PIN"
-        />
-        <button className="mt-5 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
-          Login
-        </button>
-        <div className="mt-4 rounded-xl bg-muted p-3 text-[11px] text-muted-foreground">
-          <p className="font-bold">Demo riders:</p>
-          {RIDERS.map((r) => (
-            <button
-              type="button"
-              key={r.id}
-              onClick={() => {
-                setPhone(r.phone);
-                setPin(r.pin);
-              }}
-              className="block underline"
-            >
-              {r.name} — {r.phone} / {r.pin}
-            </button>
-          ))}
-        </div>
-        <Link to="/" className="mt-3 block text-center text-xs text-muted-foreground underline">
-          Customer app par wapas
-        </Link>
-      </form>
-    </div>
-  );
+  return <Panel rider={rider} onLogout={() => logOut()} />;
 }
 
 function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {

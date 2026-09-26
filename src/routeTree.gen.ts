@@ -14,6 +14,8 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as DeliveryRouteImport } from './routes/delivery'
+import { Route as KycRouteImport } from './routes/kyc'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as OrdersIndexRouteImport } from './routes/orders.index'
 import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 
@@ -42,6 +44,16 @@ const DeliveryRoute = DeliveryRouteImport.update({
   path: '/delivery',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KycRoute = KycRouteImport.update({
+  id: '/kyc',
+  path: '/kyc',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrdersIndexRoute = OrdersIndexRouteImport.update({
   id: '/orders/',
   path: '/orders/',
@@ -59,6 +71,8 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
+  '/kyc': typeof KycRoute
+  '/signup': typeof SignupRoute
   '/orders/$id': typeof OrdersIdRoute
   '/orders/': typeof OrdersIndexRoute
 }
@@ -68,6 +82,8 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
+  '/kyc': typeof KycRoute
+  '/signup': typeof SignupRoute
   '/orders/$id': typeof OrdersIdRoute
   '/orders': typeof OrdersIndexRoute
 }
@@ -78,6 +94,8 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
+  '/kyc': typeof KycRoute
+  '/signup': typeof SignupRoute
   '/orders/$id': typeof OrdersIdRoute
   '/orders/': typeof OrdersIndexRoute
 }
@@ -89,6 +107,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/delivery'
+    | '/kyc'
+    | '/signup'
     | '/orders/$id'
     | '/orders/'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +118,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/delivery'
+    | '/kyc'
+    | '/signup'
     | '/orders/$id'
     | '/orders'
   id:
@@ -107,6 +129,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/delivery'
+    | '/kyc'
+    | '/signup'
     | '/orders/$id'
     | '/orders/'
   fileRoutesById: FileRoutesById
@@ -117,6 +141,8 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   DeliveryRoute: typeof DeliveryRoute
+  KycRoute: typeof KycRoute
+  SignupRoute: typeof SignupRoute
   OrdersIdRoute: typeof OrdersIdRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
 }
@@ -158,6 +184,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeliveryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kyc': {
+      id: '/kyc'
+      path: '/kyc'
+      fullPath: '/kyc'
+      preLoaderRoute: typeof KycRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/orders/': {
       id: '/orders/'
       path: '/orders'
@@ -181,6 +221,8 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   DeliveryRoute: DeliveryRoute,
+  KycRoute: KycRoute,
+  SignupRoute: SignupRoute,
   OrdersIdRoute: OrdersIdRoute,
   OrdersIndexRoute: OrdersIndexRoute,
 }
