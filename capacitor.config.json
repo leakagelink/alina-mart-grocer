@@ -4,7 +4,9 @@
   "webDir": "www",
   "server": {
     "url": "https://alinamart.store",
-    "cleartext": false
+    "cleartext": false,
+    "androidScheme": "https",
+    "allowNavigation": ["alinamart.store", "*.alinamart.store", "*.supabase.co"]
   },
   "android": {
     "allowMixedContent": false
