@@ -45,11 +45,10 @@ function compress(file: File): Promise<string> {
 function KycPage() {
   const s = useAccounts();
   const nav = useNavigate();
-  const [ready, setReady] = useState(false);
-  useEffect(() => { hydrateAccounts(); setReady(true); }, []);
+  useEffect(() => { hydrateAccounts(); }, []);
   const acc = currentAccount(s);
 
-  if (!ready) return null;
+  if (!s.ready) return null;
   if (!acc || acc.role !== "delivery")
     return (
       <Center>
