@@ -22,7 +22,7 @@ export type Account = {
   role: Role;
   name: string;
   phone: string;
-  pin: string;
+  password: string;
   createdAt: number;
   kycStatus?: KycStatus;
   kyc?: Kyc;
@@ -33,8 +33,8 @@ const KEY = "alina-accounts-v1";
 const SESSION = "alina-session";
 
 const SEED: Account[] = [
-  { id: "r1", role: "delivery", name: "Ravi Kumar", phone: "9876543210", pin: "1234", createdAt: 0, kycStatus: "approved" },
-  { id: "r2", role: "delivery", name: "Amit Singh", phone: "9811122233", pin: "1111", createdAt: 0, kycStatus: "approved" },
+  { id: "r1", role: "delivery", name: "Ravi Kumar", phone: "9876543210", password: "ravi123", createdAt: 0, kycStatus: "approved" },
+  { id: "r2", role: "delivery", name: "Amit Singh", phone: "9811122233", password: "amit123", createdAt: 0, kycStatus: "approved" },
 ];
 
 type S = { accounts: Account[]; sessionId: string | null };
@@ -83,7 +83,7 @@ export function currentAccount(s: S) {
   return s.accounts.find((a) => a.id === s.sessionId) ?? null;
 }
 
-export function signUp(input: { role: Role; name: string; phone: string; pin: string }) {
+export function signUp(input: { role: Role; name: string; phone: string; password: string }) {
   if (state.accounts.some((a) => a.phone === input.phone)) throw new Error("Ye number pehle se registered hai");
   const acc: Account = {
     id: "u" + Date.now(),
@@ -95,9 +95,9 @@ export function signUp(input: { role: Role; name: string; phone: string; pin: st
   return acc;
 }
 
-export function logIn(phone: string, pin: string) {
-  const a = state.accounts.find((x) => x.phone === phone && x.pin === pin);
-  if (!a) throw new Error("Galat mobile number ya PIN");
+export function logIn(phone: string, password: string) {
+  const a = state.accounts.find((x) => x.phone === phone && x.password === password);
+  if (!a) throw new Error("Galat mobile number ya password");
   save({ ...state, sessionId: a.id });
   return a;
 }
