@@ -1,4 +1,7 @@
 import { useSyncExternalStore } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { onAuthChanged } from "@/lib/accounts";
 
 export type Product = {
   id: string;
@@ -25,6 +28,8 @@ export type Order = {
   status: OrderStatus;
   customer: { name: string; phone: string; address: string };
   rider: string;
+  riderId?: string;
+  customerId?: string;
   note?: string;
   photo?: string;
   returnReason?: string;
@@ -32,8 +37,8 @@ export type Order = {
   couponCode?: string;
 };
 
-export type CashDeposit = { id: string; rider: string; amount: number; at: number };
-export type Payout = { id: string; rider: string; amount: number; at: number; status: "pending" | "paid" };
+export type CashDeposit = { id: string; rider: string; riderId?: string; amount: number; at: number };
+export type Payout = { id: string; rider: string; riderId?: string; amount: number; at: number; status: "pending" | "paid" };
 
 export type Coupon = {
   code: string;
@@ -119,7 +124,7 @@ const DEFAULT_PRODUCTS: Product[] = [
   p("h3", "Toilet Soap", "household", 36, 45, "100 g", "🧼", 40),
 ];
 
-const KEY = "alina-mart-v1";
+const CART_KEY = "alina-cart-v2";
 
 export const DEFAULT_SETTINGS: AppSettings = {
   deliveryFee: 25,
@@ -130,11 +135,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   announcement: "",
 };
 
-export const DEFAULT_COUPONS: Coupon[] = [
-  { code: "FIRST50", type: "flat", value: 50, minOrder: 199, active: true, used: 0 },
-  { code: "WELCOME10", type: "percent", value: 10, minOrder: 149, active: true, used: 0 },
-  { code: "FREEDEL", type: "freedel", value: 0, minOrder: 249, active: true, used: 0 },
-];
+export const DEFAULT_COUPONS: Coupon[] = [];
 
 let state: State = {
   products: DEFAULT_PRODUCTS,
@@ -142,7 +143,7 @@ let state: State = {
   orders: [],
   cashDeposits: [],
   payouts: [],
-  coupons: DEFAULT_COUPONS,
+  coupons: [],
   settings: DEFAULT_SETTINGS,
   notifications: [],
 };
@@ -152,41 +153,85 @@ function emit() {
   for (const l of listeners) l();
 }
 
-function persist() {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    /* ignore */
-  }
-}
-
 function set(next: State) {
+  const cartChanged = next.cart !== state.cart;
   state = next;
-  persist();
+  if (cartChanged) {
+    try {
+      localStorage.setItem(CART_KEY, JSON.stringify(state.cart));
+    } catch {
+      /* ignore */
+    }
+  }
   emit();
 }
 
+async function write(p: PromiseLike<{ error: { message: string } | null }>) {
+  const { error } = await p;
+  if (error) {
+    toast.error("Save nahi hua: " + error.message);
+    loadAll();
+  }
+}
+
+async function uid() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user.id ?? null;
+}
+
+let loading: Promise<void> | null = null;
+export function loadAll() {
+  if (loading) return loading;
+  loading = (async () => {
+    const [pr, co, se, no, or, le] = await Promise.all([
+      supabase.from("products").select("data").order("created_at", { ascending: false }),
+      supabase.from("coupons").select("data"),
+      supabase.from("app_settings").select("data").eq("id", 1).maybeSingle(),
+      supabase.from("notifications").select("data").order("created_at", { ascending: false }),
+      supabase.from("orders").select("data, customer_id").order("created_at", { ascending: false }),
+      supabase.from("rider_ledger").select("kind, rider_id, data").order("created_at", { ascending: false }),
+    ]);
+    const ledger = (le.data ?? []) as { kind: string; rider_id: string; data: any }[];
+    const products = (pr.data ?? []).map((r: any) => r.data as Product);
+    state = {
+      ...state,
+      products,
+      coupons: (co.data ?? []).map((r: any) => r.data as Coupon),
+      settings: { ...DEFAULT_SETTINGS, ...((se.data as any)?.data ?? {}) },
+      notifications: (no.data ?? []).map((r: any) => r.data as AdminNotification),
+      orders: (or.data ?? []).map((r: any) => ({ ...(r.data as Order), customerId: r.customer_id })),
+      cashDeposits: ledger.filter((l) => l.kind === "deposit").map((l) => ({ ...l.data, riderId: l.rider_id })),
+      payouts: ledger.filter((l) => l.kind === "payout").map((l) => ({ ...l.data, riderId: l.rider_id })),
+    };
+    emit();
+  })().finally(() => {
+    loading = null;
+  });
+  return loading;
+}
+
+let started = false;
 export function hydrate() {
+  if (started || typeof window === "undefined") return;
+  started = true;
   try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw) as Partial<State>;
-    if (parsed?.products?.length) {
-      state = {
-        products: parsed.products,
-        cart: parsed.cart ?? [],
-        orders: parsed.orders ?? [],
-        cashDeposits: parsed.cashDeposits ?? [],
-        payouts: parsed.payouts ?? [],
-        coupons: parsed.coupons ?? DEFAULT_COUPONS,
-        settings: { ...DEFAULT_SETTINGS, ...(parsed.settings ?? {}) },
-        notifications: parsed.notifications ?? [],
-      };
-      emit();
-    }
+    const raw = localStorage.getItem(CART_KEY);
+    if (raw) state = { ...state, cart: JSON.parse(raw) as CartItem[] };
   } catch {
     /* ignore */
   }
+  loadAll();
+  let t: ReturnType<typeof setTimeout> | undefined;
+  const refresh = () => {
+    clearTimeout(t);
+    t = setTimeout(() => loadAll(), 300);
+  };
+  const ch = supabase.channel("store-rt");
+  for (const table of ["products", "coupons", "app_settings", "notifications", "orders", "rider_ledger"]) {
+    ch.on("postgres_changes", { event: "*", schema: "public", table }, refresh);
+  }
+  ch.subscribe();
+  onAuthChanged(refresh);
 }
 
 export function useStore(): State {
@@ -251,23 +296,28 @@ export function cartCount(s: State) {
 
 export type AppliedCoupon = { code: string; discount: number; freeDelivery?: boolean };
 
-export function placeOrder(input: {
+export async function placeOrder(input: {
   customer: { name: string; phone: string; address: string };
   payment: "cod" | "online";
   note?: string;
   coupon?: AppliedCoupon;
-}): Order | null {
+}): Promise<Order | null> {
   if (state.cart.length === 0) return null;
+  const me = await uid();
+  if (!me) {
+    toast.error("Order ke liye pehle login kariye");
+    return null;
+  }
   const subtotal = cartSubtotal(state);
   const coupon = input.coupon;
   const fee = deliveryFeeFor(state, subtotal, coupon?.freeDelivery ?? false);
   const discount = coupon?.discount ?? 0;
   const order: Order = {
-    id: "AM" + Date.now().toString().slice(-8),
+    id: "AM" + Date.now().toString().slice(-7) + Math.floor(Math.random() * 90 + 10),
     createdAt: Date.now(),
-    items: state.cart.map((c) => {
-      const prod = state.products.find((x) => x.id === c.productId)!;
-      return { productId: prod.id, name: prod.name, emoji: prod.emoji, qty: c.qty, price: prod.price };
+    items: state.cart.flatMap((c) => {
+      const prod = state.products.find((x) => x.id === c.productId);
+      return prod ? [{ productId: prod.id, name: prod.name, emoji: prod.emoji, qty: c.qty, price: prod.price }] : [];
     }),
     total: Math.max(0, subtotal + fee - discount),
     ...(coupon ? { couponCode: coupon.code, discount } : {}),
@@ -275,63 +325,57 @@ export function placeOrder(input: {
     paid: input.payment === "online",
     status: "placed",
     customer: input.customer,
-    rider: "Ravi Kumar",
+    rider: "",
     ...(input.note?.trim() ? { note: input.note.trim() } : {}),
   };
-  const products = state.products.map((prod) => {
-    const line = state.cart.find((c) => c.productId === prod.id);
-    return line ? { ...prod, stock: Math.max(0, prod.stock - line.qty) } : prod;
-  });
-  const coupons = coupon
-    ? state.coupons.map((c) => (c.code === coupon.code ? { ...c, used: c.used + 1 } : c))
-    : state.coupons;
-  set({ ...state, products, cart: [], orders: [order, ...state.orders], coupons });
+  const { error } = await supabase.rpc("place_order", { p_order: order as never });
+  if (error) {
+    toast.error("Order place nahi hua: " + error.message);
+    return null;
+  }
+  set({ ...state, cart: [], orders: [{ ...order, customerId: me }, ...state.orders] });
+  loadAll();
   return order;
 }
 
+function patchOrder(id: string, fn: (o: Order) => Order) {
+  const o = state.orders.find((x) => x.id === id);
+  if (!o) return;
+  const next = fn(o);
+  set({ ...state, orders: state.orders.map((x) => (x.id === id ? next : x)) });
+  const { customerId: _c, ...data } = next;
+  write(supabase.from("orders").update({ data: data as never }).eq("id", id));
+}
+
 export function setOrderStatus(id: string, status: OrderStatus) {
-  set({
-    ...state,
-    orders: state.orders.map((o) =>
-      o.id === id ? { ...o, status, paid: status === "delivered" ? true : o.paid } : o,
-    ),
-  });
+  patchOrder(id, (o) => ({ ...o, status, paid: status === "delivered" ? true : o.paid }));
 }
 
 export function assignRider(id: string, rider: string) {
-  set({
-    ...state,
-    orders: state.orders.map((o) =>
-      o.id === id ? { ...o, rider, status: "out_for_delivery" as OrderStatus } : o,
-    ),
-  });
+  uid().then((riderId) =>
+    patchOrder(id, (o) => ({ ...o, rider, ...(riderId ? { riderId } : {}), status: "out_for_delivery" as OrderStatus })),
+  );
 }
 
 export function setOrderProof(id: string, photo: string) {
-  set({
-    ...state,
-    orders: state.orders.map((o) => (o.id === id ? { ...o, photo } : o)),
-  });
+  patchOrder(id, (o) => ({ ...o, photo }));
 }
 
 export function returnOrder(id: string, reason: string) {
-  set({
-    ...state,
-    orders: state.orders.map((o) =>
-      o.id === id ? { ...o, status: "packed" as OrderStatus, returnReason: reason } : o,
-    ),
-  });
+  patchOrder(id, (o) => ({ ...o, status: "packed" as OrderStatus, returnReason: reason }));
 }
 
 export function depositCash(rider: string, amount: number): CashDeposit {
   const d: CashDeposit = { id: "CD" + Date.now().toString().slice(-8), rider, amount, at: Date.now() };
   set({ ...state, cashDeposits: [d, ...state.cashDeposits] });
+  uid().then((me) => me && write(supabase.from("rider_ledger").insert({ id: d.id, kind: "deposit", rider_id: me, data: d as never })));
   return d;
 }
 
 export function requestPayout(rider: string, amount: number): Payout {
   const p: Payout = { id: "PO" + Date.now().toString().slice(-8), rider, amount, at: Date.now(), status: "pending" };
   set({ ...state, payouts: [p, ...state.payouts] });
+  uid().then((me) => me && write(supabase.from("rider_ledger").insert({ id: p.id, kind: "payout", rider_id: me, data: p as never })));
   return p;
 }
 
@@ -343,10 +387,12 @@ export function upsertProduct(product: Product) {
       ? state.products.map((x) => (x.id === product.id ? product : x))
       : [product, ...state.products],
   });
+  write(supabase.from("products").upsert({ id: product.id, data: product as never }));
 }
 
 export function deleteProduct(id: string) {
   set({ ...state, products: state.products.filter((x) => x.id !== id) });
+  write(supabase.from("products").delete().eq("id", id));
 }
 
 export const STATUS_LABEL: Record<OrderStatus, string> = {
@@ -366,7 +412,9 @@ export function deliveryFeeFor(s: State, subtotal: number, freeDelivery = false)
 }
 
 export function updateSettings(patch: Partial<AppSettings>) {
-  set({ ...state, settings: { ...state.settings, ...patch } });
+  const settings = { ...state.settings, ...patch };
+  set({ ...state, settings });
+  write(supabase.from("app_settings").upsert({ id: 1, data: settings as never }));
 }
 
 // ---------- Coupons ----------
@@ -399,17 +447,17 @@ export function upsertCoupon(coupon: Coupon) {
       ? state.coupons.map((c) => (c.code === coupon.code ? coupon : c))
       : [coupon, ...state.coupons],
   });
+  write(supabase.from("coupons").upsert({ code: coupon.code, data: coupon as never }));
 }
 
 export function deleteCoupon(code: string) {
   set({ ...state, coupons: state.coupons.filter((c) => c.code !== code) });
+  write(supabase.from("coupons").delete().eq("code", code));
 }
 
 export function toggleCoupon(code: string) {
-  set({
-    ...state,
-    coupons: state.coupons.map((c) => (c.code === code ? { ...c, active: !c.active } : c)),
-  });
+  const c = state.coupons.find((x) => x.code === code);
+  if (c) upsertCoupon({ ...c, active: !c.active });
 }
 
 // ---------- Notifications ----------
@@ -422,9 +470,11 @@ export function sendNotification(title: string, body: string, to = "all"): Admin
     at: Date.now(),
   };
   set({ ...state, notifications: [n, ...state.notifications] });
+  write(supabase.from("notifications").insert({ id: n.id, data: n as never }));
   return n;
 }
 
 export function deleteNotification(id: string) {
   set({ ...state, notifications: state.notifications.filter((n) => n.id !== id) });
+  write(supabase.from("notifications").delete().eq("id", id));
 }
