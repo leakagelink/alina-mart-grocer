@@ -90,6 +90,40 @@ function Admin() {
     hydrateAccounts();
   }, []);
 
+  const stats = useMemo(() => {
+    const revenue = state.orders
+      .filter((o) => o.status !== "cancelled")
+      .reduce((s, o) => s + o.total, 0);
+    const pending = state.orders.filter(
+      (o) => o.status !== "delivered" && o.status !== "cancelled",
+    ).length;
+    const low = state.products.filter((p) => p.stock <= 10).length;
+    return { revenue, pending, low, orders: state.orders.length };
+  }, [state]);
+
+  const addProduct = () => {
+    const price = Number(form.price);
+    const mrp = Number(form.mrp || form.price);
+    const stock = Number(form.stock);
+    if (!form.name.trim() || !price || !form.unit.trim()) {
+      toast.error("Name, price aur unit zaroori hai");
+      return;
+    }
+    upsertProduct({
+      id: editingId ?? "p" + Date.now().toString().slice(-7),
+      name: form.name.trim().slice(0, 60),
+      category: form.category,
+      price,
+      mrp: Math.max(mrp, price),
+      unit: form.unit.trim().slice(0, 20),
+      emoji: form.emoji.trim() || "🛍️",
+      stock: Number.isFinite(stock) ? stock : 0,
+    });
+    toast.success(editingId ? "Product updated" : "Product added");
+    setEditingId(null);
+    setForm({ ...form, name: "", price: "", mrp: "", unit: "", stock: "" });
+  };
+
   if (!me || me.role !== "admin") {
     return (
       <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
@@ -138,40 +172,6 @@ function Admin() {
       </div>
     );
   }
-
-  const stats = useMemo(() => {
-    const revenue = state.orders
-      .filter((o) => o.status !== "cancelled")
-      .reduce((s, o) => s + o.total, 0);
-    const pending = state.orders.filter(
-      (o) => o.status !== "delivered" && o.status !== "cancelled",
-    ).length;
-    const low = state.products.filter((p) => p.stock <= 10).length;
-    return { revenue, pending, low, orders: state.orders.length };
-  }, [state]);
-
-  const addProduct = () => {
-    const price = Number(form.price);
-    const mrp = Number(form.mrp || form.price);
-    const stock = Number(form.stock);
-    if (!form.name.trim() || !price || !form.unit.trim()) {
-      toast.error("Name, price aur unit zaroori hai");
-      return;
-    }
-    upsertProduct({
-      id: editingId ?? "p" + Date.now().toString().slice(-7),
-      name: form.name.trim().slice(0, 60),
-      category: form.category,
-      price,
-      mrp: Math.max(mrp, price),
-      unit: form.unit.trim().slice(0, 20),
-      emoji: form.emoji.trim() || "🛍️",
-      stock: Number.isFinite(stock) ? stock : 0,
-    });
-    toast.success(editingId ? "Product updated" : "Product added");
-    setEditingId(null);
-    setForm({ ...form, name: "", price: "", mrp: "", unit: "", stock: "" });
-  };
 
   return (
     <div className="flex min-h-screen flex-col">
