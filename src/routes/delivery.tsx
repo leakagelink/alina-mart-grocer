@@ -328,21 +328,77 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
   );
 }
 
+type GeoState =
+  | { status: "loading" }
+  | { status: "denied" }
+  | { status: "unsupported" }
+  | { status: "ok"; lat: number; lng: number; accuracy: number };
+
+function useRiderLocation(enabled: boolean): GeoState {
+  const [geo, setGeo] = useState<GeoState>({ status: "loading" });
+  useEffect(() => {
+    if (!enabled) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeo({ status: "unsupported" });
+      return;
+    }
+    const id = navigator.geolocation.watchPosition(
+      (pos) =>
+        setGeo({
+          status: "ok",
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        }),
+      () => setGeo({ status: "denied" }),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 },
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, [enabled]);
+  return geo;
+}
+
 function MapCard({ order }: { order: Order }) {
   const q = encodeURIComponent(order.customer.address);
+  const geo = useRiderLocation(true);
+  const origin = geo.status === "ok" ? `${geo.lat},${geo.lng}` : null;
   return (
     <div className="animate-card-in mt-4 overflow-hidden rounded-2xl border bg-card">
       <iframe
         title="Delivery map"
-        src={`https://maps.google.com/maps?q=${q}&z=15&output=embed`}
+        src={
+          origin
+            ? `https://maps.google.com/maps?q=${origin}&z=15&output=embed`
+            : `https://maps.google.com/maps?q=${q}&z=15&output=embed`
+        }
         className="h-48 w-full border-0"
         loading="lazy"
       />
+      <div className="flex items-center gap-2 border-b px-3 py-2 text-[11px] font-semibold">
+        {geo.status === "ok" ? (
+          <span className="flex items-center gap-1 text-primary">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+            Live location on • ±{Math.round(geo.accuracy)}m
+          </span>
+        ) : geo.status === "denied" ? (
+          <span className="text-destructive">
+            Location permission off hai — browser/app settings mein location allow karein
+          </span>
+        ) : geo.status === "unsupported" ? (
+          <span className="text-muted-foreground">Is device par location supported nahi hai</span>
+        ) : (
+          <span className="text-muted-foreground">Aapki live location le ja rahi hai…</span>
+        )}
+      </div>
       <div className="flex items-center gap-2 p-3">
         <MapPin className="h-4 w-4 shrink-0 text-primary" />
         <p className="flex-1 truncate text-xs font-bold">{order.customer.address}</p>
         <a
-          href={`https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=two-wheeler`}
+          href={
+            origin
+              ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${q}&travelmode=two-wheeler`
+              : `https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=two-wheeler`
+          }
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
