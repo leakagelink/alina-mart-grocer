@@ -3,11 +3,12 @@ import { Home, ShoppingCart, ClipboardList, LayoutDashboard } from "lucide-react
 import { cartCount, useStore } from "@/lib/store";
 import { currentAccount, hydrateAccounts, useAccounts } from "@/lib/accounts";
 import { useEffect } from "react";
+import { useLang } from "@/lib/i18n";
 
 const items = [
-  { to: "/", label: "Home", icon: Home },
-  { to: "/cart", label: "Cart", icon: ShoppingCart },
-  { to: "/orders", label: "Orders", icon: ClipboardList },
+  { to: "/", label: "home", icon: Home },
+  { to: "/cart", label: "cart", icon: ShoppingCart },
+  { to: "/orders", label: "orders", icon: ClipboardList },
 ] as const;
 
 export function BottomNav() {
@@ -16,11 +17,12 @@ export function BottomNav() {
   const accState = useAccounts();
   const me = currentAccount(accState);
   const count = cartCount(state);
+  const { t } = useLang();
 
   useEffect(() => { hydrateAccounts(); }, []);
 
   const navItems = me?.role === "admin"
-    ? [...items, { to: "/admin", label: "Admin", icon: LayoutDashboard } as const]
+    ? [...items, { to: "/admin", label: "admin", icon: LayoutDashboard } as const]
     : items;
 
   return (
@@ -37,7 +39,7 @@ export function BottomNav() {
               }`}
             >
               <Icon className="h-5 w-5" />
-              {label}
+              {t(label)}
               {to === "/cart" && count > 0 && (
                 <span className="absolute right-1/4 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-secondary px-1 text-[10px] font-bold text-secondary-foreground">
                   {count}

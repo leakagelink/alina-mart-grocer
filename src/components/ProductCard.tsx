@@ -1,4 +1,5 @@
 import { Minus, Plus } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 import { addToCart, inr, removeOne, useStore, type Product } from "@/lib/store";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
@@ -6,6 +7,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   const qty = state.cart.find((c) => c.productId === product.id)?.qty ?? 0;
   const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
   const out = product.stock <= 0;
+  const { t } = useLang();
 
   return (
     <div
@@ -16,7 +18,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         <span>{product.emoji}</span>
         {off > 0 && (
           <span className="absolute left-1 top-1 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-bold text-secondary-foreground">
-            {off}% OFF
+            {off}% {t("off")}
           </span>
         )}
       </div>
@@ -31,14 +33,14 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         </div>
         {out ? (
           <span className="rounded-lg bg-muted px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-            Out of stock
+            {t("outOfStock")}
           </span>
         ) : qty === 0 ? (
           <button
             onClick={() => addToCart(product.id)}
             className="rounded-lg border border-primary px-3 py-1.5 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground active:scale-90"
           >
-            ADD
+            {t("add")}
           </button>
         ) : (
           <div className="animate-pop flex items-center gap-2 rounded-lg bg-primary px-2 py-1 text-primary-foreground">
