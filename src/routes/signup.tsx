@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bike, ShoppingBag, User } from "lucide-react";
+import { Bike, Check, ChevronRight, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Trash2, User, X } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/alina-logo.jpg.asset.json";
-import { currentAccount, hydrateAccounts, logIn, logOut, signUp, useAccounts, type Account, type Role } from "@/lib/accounts";
+import { changePassword, currentAccount, deleteAddress, hydrateAccounts, logIn, logOut, saveAddress, setDefaultAddress, signUp, updateProfile, useAccounts, type Account, type Address, type Role } from "@/lib/accounts";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
