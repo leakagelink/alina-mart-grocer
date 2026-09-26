@@ -149,9 +149,13 @@ export async function signUp(input: { role: Role; name: string; phone: string; p
 export async function logIn(phone: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({ email: emailFor(phone), password });
   if (error) throw new Error(msg(error));
-  await loadAccounts(data.user.id);
-  const a = currentAccount(state);
-  if (!a) throw new Error("Account nahi mila");
+  let a: Account | null = null;
+  for (let i = 0; i < 4 && !a; i++) {
+    if (i) await new Promise((r) => setTimeout(r, 400 * i));
+    await loadAccounts(data.user.id);
+    a = currentAccount(state);
+  }
+  if (!a) throw new Error("Account load nahi hua, dobara try karein");
   if (a.blocked) {
     await supabase.auth.signOut();
     throw new Error("Ye account admin ne block kiya hai");
