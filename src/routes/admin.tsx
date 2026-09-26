@@ -11,6 +11,7 @@ import { CouponsAdmin } from "@/components/CouponsAdmin";
 import { AppSettingsAdmin } from "@/components/AppSettingsAdmin";
 import { NotificationsAdmin } from "@/components/NotificationsAdmin";
 import { BottomNav } from "@/components/BottomNav";
+import { AdminNav } from "@/components/AdminNav";
 import { BackButton } from "@/components/BackButton";
 import {
   CATEGORIES,
@@ -178,7 +179,7 @@ function Admin() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-3 pb-24 pt-4 sm:px-4">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-3 pb-28 pt-4 sm:px-4 sm:pb-24">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <h1 className="truncate text-lg font-bold">Admin panel</h1>
           <div className="flex shrink-0 items-center gap-2">
@@ -205,7 +206,7 @@ function Admin() {
           <Stat icon={TriangleAlert} label="Low stock" value={String(stats.low)} />
         </div>
 
-        <div className="hide-scrollbar -mx-3 mt-4 flex gap-2 overflow-x-auto px-3 py-1 sm:mx-0 sm:px-0">
+        <div className="hide-scrollbar -mx-3 mt-4 hidden gap-2 overflow-x-auto px-3 py-1 sm:mx-0 sm:flex sm:px-0">
           {TABS.map((t) => (
             <button
               key={t}
@@ -422,7 +423,10 @@ function Admin() {
           </>
         )}
       </main>
-      <BottomNav />
+      <AdminNav tab={tab} onChange={setTab} />
+      <div className="hidden sm:block">
+        <BottomNav />
+      </div>
     </div>
   );
 }
