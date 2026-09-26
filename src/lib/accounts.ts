@@ -82,7 +82,7 @@ async function loadAccounts(sessionId: string | null) {
     kyc: (p.kyc ?? undefined) as Kyc | undefined,
     rejectReason: p.reject_reason ?? undefined,
     blocked: p.blocked,
-  }));
+  })) as Account[];
   setState({ accounts, sessionId, ready: true });
 }
 

@@ -102,7 +102,7 @@ function Checkout() {
           ...(coupon.freeDelivery ? { freeDelivery: true } : {}),
         }
       : undefined;
-    const order = placeOrder({
+    const order = await placeOrder({
       customer: parsed.data,
       payment,
       ...(note.trim() ? { note: note.trim() } : {}),

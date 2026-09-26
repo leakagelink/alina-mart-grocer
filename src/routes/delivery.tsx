@@ -102,14 +102,12 @@ function shrinkPhoto(file: File, done: (dataUrl: string) => void) {
 
 function DeliveryApp() {
   const acc = useAccounts();
-  const [ready, setReady] = useState(false);
   useEffect(() => {
     hydrate();
     hydrateAccounts();
-    setReady(true);
   }, []);
   const me = currentAccount(acc);
-  if (!ready) return null;
+  if (!acc.ready) return null;
   if (!me || me.role !== "delivery")
     return (
       <div className="flex min-h-screen items-center justify-center bg-primary p-4">
@@ -118,7 +116,6 @@ function DeliveryApp() {
           <h1 className="mt-2 text-xl font-extrabold">Alina Mart Rider</h1>
           <p className="text-sm text-muted-foreground">Delivery partner account se login ya sign up kariye</p>
           <Link to="/signup" className="mt-4 block rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground">Sign up / Login</Link>
-          <p className="mt-3 text-[11px] text-muted-foreground">Demo rider: 9876543210 / password ravi123</p>
         </div>
       </div>
     );
@@ -160,7 +157,7 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
   };
 
   const readyList = useMemo(() => state.orders.filter((o) => o.status === "packed"), [state]);
-  const mine = useMemo(() => state.orders.filter((o) => o.rider === rider.name), [state, rider]);
+  const mine = useMemo(() => state.orders.filter((o) => (o.riderId ? o.riderId === rider.id : o.rider === rider.name)), [state, rider]);
   const active = mine.filter((o) => o.status === "out_for_delivery");
   const delivered = mine.filter((o) => o.status === "delivered");
   const today = delivered.filter((o) => Date.now() - o.createdAt < 864e5);
@@ -172,10 +169,10 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
   const codDue = active.filter((o) => o.payment === "cod").reduce((s, o) => s + o.total, 0);
   const codToday = today.filter((o) => o.payment === "cod").reduce((s, o) => s + o.total, 0);
   const codTotal = delivered.filter((o) => o.payment === "cod").reduce((s, o) => s + o.total, 0);
-  const deposits = useMemo(() => state.cashDeposits.filter((d) => d.rider === rider.name), [state, rider.name]);
+  const deposits = useMemo(() => state.cashDeposits.filter((d) => d.riderId === rider.id), [state, rider.name]);
   const deposited = deposits.reduce((s, d) => s + d.amount, 0);
   const codPending = codTotal - deposited;
-  const payouts = useMemo(() => state.payouts.filter((p) => p.rider === rider.name), [state, rider.name]);
+  const payouts = useMemo(() => state.payouts.filter((p) => p.riderId === rider.id), [state, rider.name]);
 
   // new order alert
   const prev = useRef(readyList.length);

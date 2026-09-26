@@ -45,11 +45,10 @@ function compress(file: File): Promise<string> {
 function KycPage() {
   const s = useAccounts();
   const nav = useNavigate();
-  const [ready, setReady] = useState(false);
-  useEffect(() => { hydrateAccounts(); setReady(true); }, []);
+  useEffect(() => { hydrateAccounts(); }, []);
   const acc = currentAccount(s);
 
-  if (!ready) return null;
+  if (!s.ready) return null;
   if (!acc || acc.role !== "delivery")
     return (
       <Center>
@@ -96,7 +95,7 @@ function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name:
     } catch (e) { toast.error((e as Error).message); }
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!f.fullName.trim() || !f.dob || f.address.trim().length < 10) return toast.error("Naam, DOB aur poora address daaliye");
     if (!/^\d{12}$/.test(f.aadhaar)) return toast.error("Aadhaar 12 digit ka hona chahiye");
@@ -106,7 +105,7 @@ function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name:
     const missing = DOCS.filter((d) => !docs[d]);
     if (missing.length) return toast.error(`Upload kariye: ${missing[0]}`);
     try {
-      submitKyc(accId, { ...f, pan: f.pan.toUpperCase(), ifsc: f.ifsc.toUpperCase(), docs: DOCS.map((d) => docs[d]!), submittedAt: Date.now() });
+      await submitKyc(accId, { ...f, pan: f.pan.toUpperCase(), ifsc: f.ifsc.toUpperCase(), docs: DOCS.map((d) => docs[d]!), submittedAt: Date.now() });
       toast.success("KYC submit ho gaya! Admin approval ka intezaar kariye");
     } catch (err) { toast.error((err as Error).message); }
 

@@ -73,16 +73,16 @@ export function UsersAdmin() {
               {!isMe && (
                 <div className="mt-2 flex flex-wrap gap-2 text-xs font-bold">
                   <button
-                    onClick={() => { setBlocked(a.id, !a.blocked); toast.success(a.blocked ? "Unblock ho gaya" : "Block ho gaya"); }}
+                    onClick={async () => { await setBlocked(a.id, !a.blocked).catch((e) => toast.error(e.message)); toast.success(a.blocked ? "Unblock ho gaya" : "Block ho gaya"); }}
                     className="rounded-lg bg-muted px-3 py-1.5 text-muted-foreground"
                   >
                     {a.blocked ? "Unblock" : "Block"}
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       const pw = window.prompt(`${a.name} ka naya password (min 6)`);
                       if (!pw) return;
-                      try { resetPassword(a.id, pw); toast.success("Password reset ho gaya"); }
+                      try { await resetPassword(a.id, pw); toast.success("Password reset ho gaya"); }
                       catch (e) { toast.error((e as Error).message); }
                     }}
                     className="rounded-lg bg-secondary px-3 py-1.5 text-secondary-foreground"
@@ -90,10 +90,10 @@ export function UsersAdmin() {
                     Reset password
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!window.confirm(`${a.name} ka account delete karein?`)) return;
-                      deleteAccount(a.id);
-                      toast.success("Account delete ho gaya");
+                      try { await deleteAccount(a.id); toast.success("Account delete ho gaya"); }
+                      catch (e) { toast.error((e as Error).message); }
                     }}
                     className="rounded-lg bg-destructive px-3 py-1.5 text-destructive-foreground"
                   >
