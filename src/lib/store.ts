@@ -28,10 +28,38 @@ export type Order = {
   note?: string;
   photo?: string;
   returnReason?: string;
+  discount?: number;
+  couponCode?: string;
 };
 
 export type CashDeposit = { id: string; rider: string; amount: number; at: number };
 export type Payout = { id: string; rider: string; amount: number; at: number; status: "pending" | "paid" };
+
+export type Coupon = {
+  code: string;
+  type: "percent" | "flat" | "freedel";
+  value: number; // percent for "percent", rupees for "flat"
+  minOrder: number;
+  active: boolean;
+  used: number;
+};
+
+export type AppSettings = {
+  deliveryFee: number;
+  freeDeliveryAbove: number;
+  deliveryMinutes: number;
+  codEnabled: boolean;
+  onlineEnabled: boolean;
+  announcement: string;
+};
+
+export type AdminNotification = {
+  id: string;
+  title: string;
+  body: string;
+  to: string;
+  at: number;
+};
 
 export type State = {
   products: Product[];
@@ -39,6 +67,9 @@ export type State = {
   orders: Order[];
   cashDeposits: CashDeposit[];
   payouts: Payout[];
+  coupons: Coupon[];
+  settings: AppSettings;
+  notifications: AdminNotification[];
 };
 
 export const CATEGORIES = [
@@ -90,7 +121,31 @@ const DEFAULT_PRODUCTS: Product[] = [
 
 const KEY = "alina-mart-v1";
 
-let state: State = { products: DEFAULT_PRODUCTS, cart: [], orders: [], cashDeposits: [], payouts: [] };
+export const DEFAULT_SETTINGS: AppSettings = {
+  deliveryFee: 25,
+  freeDeliveryAbove: 299,
+  deliveryMinutes: 15,
+  codEnabled: true,
+  onlineEnabled: true,
+  announcement: "",
+};
+
+export const DEFAULT_COUPONS: Coupon[] = [
+  { code: "FIRST50", type: "flat", value: 50, minOrder: 199, active: true, used: 0 },
+  { code: "WELCOME10", type: "percent", value: 10, minOrder: 149, active: true, used: 0 },
+  { code: "FREEDEL", type: "freedel", value: 0, minOrder: 249, active: true, used: 0 },
+];
+
+let state: State = {
+  products: DEFAULT_PRODUCTS,
+  cart: [],
+  orders: [],
+  cashDeposits: [],
+  payouts: [],
+  coupons: DEFAULT_COUPONS,
+  settings: DEFAULT_SETTINGS,
+  notifications: [],
+};
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -115,9 +170,18 @@ export function hydrate() {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return;
-    const parsed = JSON.parse(raw) as State;
+    const parsed = JSON.parse(raw) as Partial<State>;
     if (parsed?.products?.length) {
-      state = { products: parsed.products, cart: parsed.cart ?? [], orders: parsed.orders ?? [], cashDeposits: parsed.cashDeposits ?? [], payouts: parsed.payouts ?? [] };
+      state = {
+        products: parsed.products,
+        cart: parsed.cart ?? [],
+        orders: parsed.orders ?? [],
+        cashDeposits: parsed.cashDeposits ?? [],
+        payouts: parsed.payouts ?? [],
+        coupons: parsed.coupons ?? DEFAULT_COUPONS,
+        settings: { ...DEFAULT_SETTINGS, ...(parsed.settings ?? {}) },
+        notifications: parsed.notifications ?? [],
+      };
       emit();
     }
   } catch {
@@ -185,14 +249,19 @@ export function cartCount(s: State) {
   return s.cart.reduce((n, c) => n + c.qty, 0);
 }
 
+export type AppliedCoupon = { code: string; discount: number; freeDelivery?: boolean };
+
 export function placeOrder(input: {
   customer: { name: string; phone: string; address: string };
   payment: "cod" | "online";
   note?: string;
+  coupon?: AppliedCoupon;
 }): Order | null {
   if (state.cart.length === 0) return null;
   const subtotal = cartSubtotal(state);
-  const fee = subtotal >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
+  const coupon = input.coupon;
+  const fee = deliveryFeeFor(state, subtotal, coupon?.freeDelivery ?? false);
+  const discount = coupon?.discount ?? 0;
   const order: Order = {
     id: "AM" + Date.now().toString().slice(-8),
     createdAt: Date.now(),
@@ -200,7 +269,8 @@ export function placeOrder(input: {
       const prod = state.products.find((x) => x.id === c.productId)!;
       return { productId: prod.id, name: prod.name, emoji: prod.emoji, qty: c.qty, price: prod.price };
     }),
-    total: subtotal + fee,
+    total: Math.max(0, subtotal + fee - discount),
+    ...(coupon ? { couponCode: coupon.code, discount } : {}),
     payment: input.payment,
     paid: input.payment === "online",
     status: "placed",
@@ -212,7 +282,10 @@ export function placeOrder(input: {
     const line = state.cart.find((c) => c.productId === prod.id);
     return line ? { ...prod, stock: Math.max(0, prod.stock - line.qty) } : prod;
   });
-  set({ ...state, products, cart: [], orders: [order, ...state.orders] });
+  const coupons = coupon
+    ? state.coupons.map((c) => (c.code === coupon.code ? { ...c, used: c.used + 1 } : c))
+    : state.coupons;
+  set({ ...state, products, cart: [], orders: [order, ...state.orders], coupons });
   return order;
 }
 
@@ -285,3 +358,73 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
 };
 
 export const inr = (n: number) => "₹" + n.toFixed(0);
+
+// ---------- App settings ----------
+export function deliveryFeeFor(s: State, subtotal: number, freeDelivery = false): number {
+  if (subtotal === 0 || freeDelivery) return 0;
+  return subtotal >= s.settings.freeDeliveryAbove ? 0 : s.settings.deliveryFee;
+}
+
+export function updateSettings(patch: Partial<AppSettings>) {
+  set({ ...state, settings: { ...state.settings, ...patch } });
+}
+
+// ---------- Coupons ----------
+export function validateCoupon(
+  codeRaw: string,
+  subtotal: number,
+): { ok: boolean; discount: number; freeDelivery?: boolean; code?: string; message: string } {
+  const code = codeRaw.trim().toUpperCase();
+  const c = state.coupons.find((x) => x.code === code);
+  if (!c) return { ok: false, discount: 0, message: "Coupon code galat hai" };
+  if (!c.active) return { ok: false, discount: 0, message: "Ye coupon abhi active nahi hai" };
+  if (subtotal < c.minOrder)
+    return { ok: false, discount: 0, message: `Minimum order ${inr(c.minOrder)} chahiye` };
+  if (c.type === "percent") {
+    const d = Math.min(Math.round((subtotal * c.value) / 100), subtotal);
+    return { ok: true, discount: d, code: c.code, message: `${c.value}% off — ${inr(d)} bachat!` };
+  }
+  if (c.type === "flat") {
+    const d = Math.min(c.value, subtotal);
+    return { ok: true, discount: d, code: c.code, message: `${inr(d)} off applied!` };
+  }
+  return { ok: true, discount: 0, freeDelivery: true, code: c.code, message: "Free delivery applied!" };
+}
+
+export function upsertCoupon(coupon: Coupon) {
+  const exists = state.coupons.some((c) => c.code === coupon.code);
+  set({
+    ...state,
+    coupons: exists
+      ? state.coupons.map((c) => (c.code === coupon.code ? coupon : c))
+      : [coupon, ...state.coupons],
+  });
+}
+
+export function deleteCoupon(code: string) {
+  set({ ...state, coupons: state.coupons.filter((c) => c.code !== code) });
+}
+
+export function toggleCoupon(code: string) {
+  set({
+    ...state,
+    coupons: state.coupons.map((c) => (c.code === code ? { ...c, active: !c.active } : c)),
+  });
+}
+
+// ---------- Notifications ----------
+export function sendNotification(title: string, body: string, to = "all"): AdminNotification {
+  const n: AdminNotification = {
+    id: "NT" + Date.now().toString().slice(-8),
+    title,
+    body,
+    to,
+    at: Date.now(),
+  };
+  set({ ...state, notifications: [n, ...state.notifications] });
+  return n;
+}
+
+export function deleteNotification(id: string) {
+  set({ ...state, notifications: state.notifications.filter((n) => n.id !== id) });
+}
