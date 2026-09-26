@@ -206,13 +206,13 @@ export function placeOrder(input: {
     status: "placed",
     customer: input.customer,
     rider: "Ravi Kumar",
-    note: input.note?.trim() || undefined,
+    ...(input.note?.trim() ? { note: input.note.trim() } : {}),
   };
   const products = state.products.map((prod) => {
     const line = state.cart.find((c) => c.productId === prod.id);
     return line ? { ...prod, stock: Math.max(0, prod.stock - line.qty) } : prod;
   });
-  set({ products, cart: [], orders: [order, ...state.orders] });
+  set({ ...state, products, cart: [], orders: [order, ...state.orders] });
   return order;
 }
 
