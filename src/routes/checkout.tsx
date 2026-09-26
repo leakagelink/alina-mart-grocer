@@ -41,6 +41,7 @@ function Checkout() {
   const navigate = useNavigate();
   const state = useStore();
   const [form, setForm] = useState({ name: "", phone: "", address: "" });
+  const [note, setNote] = useState("");
   const [payment, setPayment] = useState<"cod" | "online">("cod");
   const [busy, setBusy] = useState(false);
 
@@ -65,7 +66,7 @@ function Checkout() {
     if (payment === "online") {
       await new Promise((r) => setTimeout(r, 1200));
     }
-    const order = placeOrder({ customer: parsed.data, payment });
+    const order = placeOrder({ customer: parsed.data, payment, note: note.trim() || undefined });
     setBusy(false);
     if (!order) return;
     toast.success(payment === "online" ? "Payment successful" : "Order placed — COD");
@@ -101,6 +102,14 @@ function Checkout() {
             rows={3}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
             placeholder="House no, street, landmark, city, pincode"
+            className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <textarea
+            value={note}
+            maxLength={200}
+            rows={2}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Delivery note (optional) — gate code, floor, delivery time"
             className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
