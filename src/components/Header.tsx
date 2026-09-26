@@ -6,6 +6,7 @@ import { currentAccount, hydrateAccounts, useAccounts } from "@/lib/accounts";
 import { useEffect } from "react";
 import { useLang } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { BackButton } from "@/components/BackButton";
 
 export function Header({ query, onQuery }: { query?: string; onQuery?: (v: string) => void }) {
   const state = useStore();
@@ -18,14 +19,15 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
 
   return (
     <header className="sticky top-0 z-30 brand-gradient text-primary-foreground">
-      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
+      <div className="mx-auto flex max-w-5xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4">
+        <BackButton />
+        <Link to="/" className="flex min-w-0 items-center gap-2">
           <img
             src={logo.url}
             alt="Alina Mart"
-            className="h-10 w-10 rounded-xl bg-white object-cover"
+            className="h-9 w-9 shrink-0 rounded-xl bg-white object-cover sm:h-10 sm:w-10"
           />
-          <span className="text-lg font-extrabold leading-none">
+          <span className="truncate text-base font-extrabold leading-none sm:text-lg">
             Alina<span className="text-secondary">Mart</span>
           </span>
         </Link>

@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/BackButton";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Clock, FileUp, LogOut, ShieldCheck, XCircle } from "lucide-react";
@@ -121,6 +122,7 @@ function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name:
     <div className="min-h-screen bg-background pb-10">
       <div className="brand-gradient px-4 py-5 text-primary-foreground">
         <div className="mx-auto flex max-w-2xl items-center gap-3">
+          <BackButton />
           <ShieldCheck className="h-8 w-8" />
           <div className="flex-1"><p className="text-lg font-extrabold">KYC verification</p><p className="text-xs opacity-80">Delivery shuru karne ke liye details bhariye</p></div>
           <button onClick={onLogout} aria-label="Logout"><LogOut className="h-5 w-5" /></button>
