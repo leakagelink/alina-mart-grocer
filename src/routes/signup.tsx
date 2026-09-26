@@ -57,6 +57,8 @@ function SignupPage() {
     } catch (err) {
       toast.error((err as Error).message);
     }
+
+    return undefined;
   };
 
   const input = "mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm";

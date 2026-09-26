@@ -108,6 +108,8 @@ function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name:
       submitKyc(accId, { ...f, pan: f.pan.toUpperCase(), ifsc: f.ifsc.toUpperCase(), docs: DOCS.map((d) => docs[d]!), submittedAt: Date.now() });
       toast.success("KYC submit ho gaya! Admin approval ka intezaar kariye");
     } catch (err) { toast.error((err as Error).message); }
+
+    return undefined;
   };
 
   const inp = "mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm";
