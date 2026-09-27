@@ -5,11 +5,12 @@ const SPLASH_MS = 2100;
 const FADE_MS = 400;
 
 export function SplashScreen() {
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return !sessionStorage.getItem("alina-splash-seen");
-  });
+  const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
+
+  useEffect(() => {
+    if (!sessionStorage.getItem("alina-splash-seen")) setVisible(true);
+  }, []);
 
   useEffect(() => {
     if (!visible) return;

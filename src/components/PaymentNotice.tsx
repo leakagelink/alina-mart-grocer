@@ -29,10 +29,10 @@ export function PaymentNotice() {
   const expired = remaining === 0;
   const values = remaining === null ? [7, 0, 0, 0] : timeParts(remaining);
   const units = [
-    ["Days", "दिन"],
-    ["Hours", "घंटे"],
-    ["Minutes", "मिनट"],
-    ["Seconds", "सेकंड"],
+    { en: "Days", hi: "दिन", value: values[0] ?? 0 },
+    { en: "Hours", hi: "घंटे", value: values[1] ?? 0 },
+    { en: "Minutes", hi: "मिनट", value: values[2] ?? 0 },
+    { en: "Seconds", hi: "सेकंड", value: values[3] ?? 0 },
   ];
 
   const notice = (
@@ -62,10 +62,10 @@ export function PaymentNotice() {
             <Clock3 className="size-3.5" aria-hidden="true" /> Time remaining · शेष समय
           </div>
           <div className="flex justify-center gap-2 sm:gap-3">
-            {values.map((value, index) => (
-              <div key={units[index][0]} className="w-[68px] rounded-md border border-border bg-background px-1 py-2 sm:w-20">
-                <div className="text-xl font-bold tabular-nums text-foreground sm:text-2xl">{String(value).padStart(2, "0")}</div>
-                <div className="text-[10px] leading-tight text-muted-foreground sm:text-xs">{units[index][0]}<br />{units[index][1]}</div>
+            {units.map((unit) => (
+              <div key={unit.en} className="w-[68px] rounded-md border border-border bg-background px-1 py-2 sm:w-20">
+                <div className="text-xl font-bold tabular-nums text-foreground sm:text-2xl">{String(unit.value).padStart(2, "0")}</div>
+                <div className="text-[10px] leading-tight text-muted-foreground sm:text-xs">{unit.en}<br />{unit.hi}</div>
               </div>
             ))}
           </div>
