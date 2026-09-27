@@ -36,7 +36,7 @@ export function PaymentNotice() {
   ];
 
   const notice = (
-    <div className="mx-auto w-full max-w-3xl px-4 py-5 text-center sm:py-7">
+    <div className="mx-auto w-full max-w-3xl px-5 py-8 text-center sm:py-10">
       <div className="mb-3 flex items-center justify-center gap-2">
         <img src={logo.url} alt="Alina Mart" className="size-9 rounded-md object-cover" />
         <span className="text-base font-bold text-foreground">Alina Mart</span>
@@ -45,21 +45,21 @@ export function PaymentNotice() {
         <AlertTriangle className="size-4" aria-hidden="true" /> Payment notice · भुगतान सूचना
       </div>
       <h2 className="text-lg font-bold leading-snug text-foreground sm:text-2xl">
-        App service is scheduled to be temporarily suspended
+        Alina Mart service is temporarily unavailable
       </h2>
       <p className="mt-1 text-base font-semibold text-foreground sm:text-lg">
-        ऐप सेवा अस्थायी रूप से बंद की जा सकती है
+        Alina Mart की सेवा अस्थायी रूप से बंद है
       </p>
       <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        Due to an outstanding payment, Alina Mart service may be paused when the time below ends. Please settle the payment with your service provider to keep the app running.
+        Service is currently paused due to an outstanding payment. Please settle the payment with your service provider to restore access.
       </p>
       <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        बकाया भुगतान के कारण नीचे दिया गया समय समाप्त होने पर Alina Mart की सेवा रोकी जा सकती है। ऐप चालू रखने के लिए कृपया अपने सेवा प्रदाता से संपर्क कर बकाया भुगतान करें।
+        बकाया भुगतान के कारण सेवा अभी अस्थायी रूप से बंद है। ऐप दोबारा शुरू कराने के लिए कृपया अपने सेवा प्रदाता से संपर्क कर बकाया भुगतान करें।
       </p>
       {!expired && (
-        <div className="mt-5" role="timer" aria-label="Time remaining until scheduled suspension">
+        <div className="mt-5" role="timer" aria-label="Time remaining to settle payment">
           <div className="mb-2 flex items-center justify-center gap-1.5 text-xs font-semibold text-foreground">
-            <Clock3 className="size-3.5" aria-hidden="true" /> Time remaining · शेष समय
+              <Clock3 className="size-3.5" aria-hidden="true" /> Payment deadline · भुगतान की समय-सीमा
           </div>
           <div className="flex justify-center gap-2 sm:gap-3">
             {units.map((unit) => (
@@ -80,13 +80,9 @@ export function PaymentNotice() {
     </div>
   );
 
-  return expired ? (
-    <div className="fixed inset-0 z-[110] overflow-y-auto bg-background" role="alertdialog" aria-modal="true" aria-label="Alina Mart service notice">
-      <div className="flex min-h-full items-center justify-center">{notice}</div>
-    </div>
-  ) : (
-    <aside className="relative z-40 border-b border-destructive/30 bg-card shadow-sm" aria-label="Payment notice">
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-background" aria-label="Payment notice">
       {notice}
-    </aside>
+    </main>
   );
 }
