@@ -291,3 +291,12 @@
   -webkit-backdrop-filter: blur(16px) saturate(1.6);
 }
 @utility shadow-lift { box-shadow: var(--shadow-lift); }
+
+/* ===== Responsive scaling for all devices ===== */
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; min-height: 100dvh; }
+@media (max-width: 380px) { html { font-size: 14.5px; } }
+@media (max-width: 330px) { html { font-size: 13px; } }
+@media (min-width: 1536px) { html { font-size: 17px; } }
+img, video, canvas, iframe { max-width: 100%; }
+table { display: block; overflow-x: auto; max-width: 100%; }

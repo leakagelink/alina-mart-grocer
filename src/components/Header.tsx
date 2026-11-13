@@ -31,7 +31,7 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
             Marti<span className="text-secondary">go</span>
           </span>
         </Link>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           {me?.role === "admin" && (
             <Link
               to="/admin"

@@ -145,7 +145,7 @@ function Home() {
             {/* Category circles */}
             <section className="mt-5 px-4">
               <h2 className="mb-3 text-base font-extrabold">{t("shopByCat")}</h2>
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-6">
                 {CATEGORIES.map((c, i) => (
                   <button
                     key={c.id}
@@ -180,7 +180,7 @@ function Home() {
                 </div>
                 <div className="hide-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
                   {deals.map((p, i) => (
-                    <div key={p.id} className="w-36 shrink-0 sm:w-40">
+                    <div key={p.id} className="w-[40vw] min-w-[8.5rem] max-w-[11rem] shrink-0">
                       <ProductCard product={p} index={i} />
                     </div>
                   ))}
@@ -198,7 +198,7 @@ function Home() {
                 </div>
                 <div className="hide-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
                   {bestsellers.map((p, i) => (
-                    <div key={p.id} className="w-36 shrink-0 sm:w-40">
+                    <div key={p.id} className="w-[40vw] min-w-[8.5rem] max-w-[11rem] shrink-0">
                       <ProductCard product={p} index={i} />
                     </div>
                   ))}
@@ -258,7 +258,7 @@ function Home() {
               ))}
             </div>
           )}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 xl:grid-cols-5">
             {products.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
             ))}
