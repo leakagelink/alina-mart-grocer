@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -36,7 +37,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -79,12 +80,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Alina Mart — Groceries, Daily Essentials & More" },
+      { title: "Martigo — Groceries, Daily Essentials & More" },
       {
         name: "description",
-        content: "Alina Mart delivers groceries and daily essentials to your door in 15 minutes.",
+        content: "Martigo delivers groceries and daily essentials to your door in 15 minutes.",
       },
-      { property: "og:title", content: "Alina Mart" },
+      { property: "og:title", content: "Martigo" },
       {
         property: "og:description",
         content: "Groceries, daily essentials and more — delivered in 15 minutes.",

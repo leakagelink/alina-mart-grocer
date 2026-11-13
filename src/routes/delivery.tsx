@@ -39,12 +39,12 @@ import { currentAccount, hydrateAccounts, logOut, useAccounts } from "@/lib/acco
 export const Route = createFileRoute("/delivery")({
   head: () => ({
     meta: [
-      { title: "Delivery Partner — Alina Mart" },
+      { title: "Delivery Partner — Martigo" },
       {
         name: "description",
-        content: "Alina Mart delivery partner app: login, pickups, navigation, OTP delivery and earnings.",
+        content: "Martigo delivery partner app: login, pickups, navigation, OTP delivery and earnings.",
       },
-      { property: "og:title", content: "Delivery Partner — Alina Mart" },
+      { property: "og:title", content: "Delivery Partner — Martigo" },
       { property: "og:description", content: "Pickups, navigation, OTP delivery and earnings." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -113,7 +113,7 @@ function DeliveryApp() {
       <div className="flex min-h-screen items-center justify-center bg-primary p-4">
         <div className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 text-center shadow-2xl">
           <Bike className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-2 text-xl font-extrabold">Alina Mart Rider</h1>
+          <h1 className="mt-2 text-xl font-extrabold">Martigo Rider</h1>
           <p className="text-sm text-muted-foreground">Delivery partner account se login ya sign up kariye</p>
           <Link to="/signup" className="mt-4 block rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground">Sign up / Login</Link>
         </div>

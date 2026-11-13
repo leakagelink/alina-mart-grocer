@@ -18,9 +18,9 @@ import { useLang } from "@/lib/i18n";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Your Cart — Alina Mart" },
-      { name: "description", content: "Review your Alina Mart basket and checkout in seconds." },
-      { property: "og:title", content: "Your Cart — Alina Mart" },
+      { title: "Your Cart — Martigo" },
+      { name: "description", content: "Review your Martigo basket and checkout in seconds." },
+      { property: "og:title", content: "Your Cart — Martigo" },
       { property: "og:description", content: "Review your basket and checkout in seconds." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

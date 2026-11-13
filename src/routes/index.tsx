@@ -10,16 +10,24 @@ import { CATEGORIES, cartCount, cartSubtotal, hydrate, inr, useStore } from "@/l
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Alina Mart — Groceries & Daily Essentials in 15 Minutes" },
+      { title: "Martigo — Groceries & Daily Essentials in 15 Minutes" },
       {
         name: "description",
         content:
-          "Order fruits, vegetables, dairy, snacks and household essentials from Alina Mart with 15-minute delivery, COD or online payment, and live order tracking.",
+          "Order fruits, vegetables, dairy, snacks and household essentials from Martigo with 15-minute delivery, COD or online payment, and live order tracking.",
       },
-      { property: "og:title", content: "Alina Mart — Groceries in 15 Minutes" },
+      { property: "og:title", content: "Martigo — Groceries in 15 Minutes" },
       {
         property: "og:description",
         content: "Fresh groceries and daily essentials delivered fast. COD & online payment.",
+      },
+      {
+        property: "og:image",
+        content: "https://alinamart.store/__l5e/assets-v1/a01d940e-f31d-4bfd-a3e8-a268bb870708/martigo-og.png",
+      },
+      {
+        name: "twitter:image",
+        content: "https://alinamart.store/__l5e/assets-v1/a01d940e-f31d-4bfd-a3e8-a268bb870708/martigo-og.png",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

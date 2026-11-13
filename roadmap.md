@@ -1,4 +1,4 @@
-# Alina Mart — Roadmap
+# Martigo — Roadmap
 
 ## Done
 - Customer app (shop, cart, COD/online demo payment, tracking)

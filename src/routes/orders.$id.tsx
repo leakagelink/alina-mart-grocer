@@ -8,10 +8,10 @@ import { STATUS_LABEL, hydrate, inr, useStore, type OrderStatus } from "@/lib/st
 export const Route = createFileRoute("/orders/$id")({
   head: () => ({
     meta: [
-      { title: "Order Tracking — Alina Mart" },
-      { name: "description", content: "Live tracking for your Alina Mart delivery." },
-      { property: "og:title", content: "Order Tracking — Alina Mart" },
-      { property: "og:description", content: "Live tracking for your Alina Mart delivery." },
+      { title: "Order Tracking — Martigo" },
+      { name: "description", content: "Live tracking for your Martigo delivery." },
+      { property: "og:title", content: "Order Tracking — Martigo" },
+      { property: "og:description", content: "Live tracking for your Martigo delivery." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

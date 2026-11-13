@@ -7,9 +7,9 @@ import { STATUS_LABEL, hydrate, inr, useStore } from "@/lib/store";
 export const Route = createFileRoute("/orders/")({
   head: () => ({
     meta: [
-      { title: "My Orders — Alina Mart" },
-      { name: "description", content: "Track your Alina Mart grocery orders in real time." },
-      { property: "og:title", content: "My Orders — Alina Mart" },
+      { title: "My Orders — Martigo" },
+      { name: "description", content: "Track your Martigo grocery orders in real time." },
+      { property: "og:title", content: "My Orders — Martigo" },
       { property: "og:description", content: "Track your grocery orders in real time." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

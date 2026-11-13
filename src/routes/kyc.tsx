@@ -8,9 +8,9 @@ import { currentAccount, hydrateAccounts, logOut, submitKyc, useAccounts, type K
 export const Route = createFileRoute("/kyc")({
   head: () => ({
     meta: [
-      { title: "Delivery Partner KYC — Alina Mart" },
-      { name: "description", content: "Submit your KYC documents to start delivering with Alina Mart." },
-      { property: "og:title", content: "Delivery Partner KYC — Alina Mart" },
+      { title: "Delivery Partner KYC — Martigo" },
+      { name: "description", content: "Submit your KYC documents to start delivering with Martigo." },
+      { property: "og:title", content: "Delivery Partner KYC — Martigo" },
       { property: "og:description", content: "Documents upload karke delivery shuru kariye." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

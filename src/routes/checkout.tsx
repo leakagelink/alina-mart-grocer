@@ -18,12 +18,12 @@ import {
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — Alina Mart" },
+      { title: "Checkout — Martigo" },
       {
         name: "description",
-        content: "Pay by cash on delivery or online and get your Alina Mart order in 15 minutes.",
+        content: "Pay by cash on delivery or online and get your Martigo order in 15 minutes.",
       },
-      { property: "og:title", content: "Checkout — Alina Mart" },
+      { property: "og:title", content: "Checkout — Martigo" },
       { property: "og:description", content: "Cash on delivery or online payment." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

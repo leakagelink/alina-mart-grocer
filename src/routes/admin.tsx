@@ -29,12 +29,12 @@ import { currentAccount, hydrateAccounts, logIn, logOut, useAccounts } from "@/l
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin Panel — Alina Mart" },
+      { title: "Admin Panel — Martigo" },
       {
         name: "description",
-        content: "Manage Alina Mart products, stock levels, orders and delivery status.",
+        content: "Manage Martigo products, stock levels, orders and delivery status.",
       },
-      { property: "og:title", content: "Admin Panel — Alina Mart" },
+      { property: "og:title", content: "Admin Panel — Martigo" },
       { property: "og:description", content: "Products, stock and order management." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

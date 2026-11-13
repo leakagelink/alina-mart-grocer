@@ -19,10 +19,10 @@ export const Route = createFileRoute("/product/$id")({
   },
   head: () => ({
     meta: [
-      { title: "Product — Alina Mart" },
-      { name: "description", content: "Product details, price and offers on Alina Mart." },
-      { property: "og:title", content: "Product — Alina Mart" },
-      { property: "og:description", content: "Product details, price and offers on Alina Mart." },
+      { title: "Product — Martigo" },
+      { name: "description", content: "Product details, price and offers on Martigo." },
+      { property: "og:title", content: "Product — Martigo" },
+      { property: "og:description", content: "Product details, price and offers on Martigo." },
     ],
   }),
   component: ProductDetail,

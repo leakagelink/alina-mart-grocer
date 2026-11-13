@@ -3,15 +3,15 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bike, ChevronRight, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
-import logo from "@/assets/alina-logo.jpg.asset.json";
+import logo from "@/assets/martigo-logo-full.png.asset.json";
 import { changePassword, currentAccount, deleteAddress, hydrateAccounts, logIn, logOut, saveAddress, setDefaultAddress, signUp, updateProfile, useAccounts, type Account, type Address, type Role } from "@/lib/accounts";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Sign up / Login — Alina Mart" },
-      { name: "description", content: "Create your Alina Mart account as a customer or delivery partner." },
-      { property: "og:title", content: "Join Alina Mart" },
+      { title: "Sign up / Login — Martigo" },
+      { name: "description", content: "Create your Martigo account as a customer or delivery partner." },
+      { property: "og:title", content: "Join Martigo" },
       { property: "og:description", content: "Customer ya delivery partner ke roop mein account banaiye." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -49,7 +49,7 @@ function SignupPage() {
       if (mode === "signup") {
         if (name.trim().length < 2) return toast.error("Naam daaliye");
         const a = await signUp({ role, name: name.trim().slice(0, 60), phone: ph, password });
-        toast.success(role === "delivery" ? "Account ban gaya! Ab KYC complete kariye" : "Welcome to Alina Mart!");
+        toast.success(role === "delivery" ? "Account ban gaya! Ab KYC complete kariye" : "Welcome to Martigo!");
         go(a);
       } else {
         const a = await logIn(ph, password);
@@ -73,7 +73,7 @@ function SignupPage() {
     <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
       <BackButton floating />
       <form onSubmit={submit} className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 shadow-2xl">
-        <img src={logo.url} alt="Alina Mart" className="mx-auto h-16 w-16 rounded-2xl object-cover" />
+        <img src={logo.url} alt="Martigo" className="mx-auto h-12 w-auto" />
         <h1 className="mt-2 text-center text-xl font-extrabold">
           {mode === "signup" ? "Account banaiye" : "Login kariye"}
         </h1>

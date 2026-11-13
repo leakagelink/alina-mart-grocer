@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { MapPin, ShoppingCart, LayoutDashboard, User } from "lucide-react";
-import logo from "@/assets/alina-logo.jpg.asset.json";
+import logo from "@/assets/martigo-icon.png.asset.json";
 import { cartCount, useStore } from "@/lib/store";
 import { currentAccount, hydrateAccounts, useAccounts } from "@/lib/accounts";
 import { useEffect } from "react";
@@ -24,11 +24,11 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <img
             src={logo.url}
-            alt="Alina Mart"
-            className="h-9 w-9 shrink-0 rounded-xl bg-white object-cover sm:h-10 sm:w-10"
+            alt="Martigo"
+            className="h-9 w-9 shrink-0 drop-shadow sm:h-10 sm:w-10"
           />
           <span className="truncate text-base font-extrabold leading-none sm:text-lg">
-            Alina<span className="text-secondary">Mart</span>
+            Marti<span className="text-secondary">go</span>
           </span>
         </Link>
         <div className="ml-auto flex items-center gap-2">

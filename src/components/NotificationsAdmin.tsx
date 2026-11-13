@@ -30,7 +30,7 @@ export function NotificationsAdmin() {
       return;
     }
     downloadCsv(
-      "alina-mart-orders.csv",
+      "martigo-orders.csv",
       ["Order ID", "Date", "Customer", "Phone", "Address", "Items", "Coupon", "Discount", "Total", "Payment", "Status", "Rider"],
       state.orders.map((o) => [
         o.id,
@@ -52,7 +52,7 @@ export function NotificationsAdmin() {
 
   const exportProducts = () => {
     downloadCsv(
-      "alina-mart-products.csv",
+      "martigo-products.csv",
       ["ID", "Name", "Category", "Price", "MRP", "Unit", "Stock"],
       state.products.map((p) => [p.id, p.name, p.category, p.price, p.mrp, p.unit, p.stock]),
     );
@@ -65,7 +65,7 @@ export function NotificationsAdmin() {
       return;
     }
     downloadCsv(
-      "alina-mart-coupons.csv",
+      "martigo-coupons.csv",
       ["Code", "Type", "Value", "Min order", "Active", "Used"],
       state.coupons.map((c) => [c.code, c.type, c.value, c.minOrder, c.active ? "Yes" : "No", c.used]),
     );
