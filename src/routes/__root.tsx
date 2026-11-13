@@ -11,7 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
-import { PaymentNotice } from "@/components/PaymentNotice";
+import { SplashScreen } from "@/components/SplashScreen";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -122,18 +122,13 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const paymentHoldActive = true;
 
   return (
     <QueryClientProvider client={queryClient}>
-      {paymentHoldActive ? (
-        <PaymentNotice />
-      ) : (
-        <>
-          <Outlet />
-          <Toaster position="top-center" richColors />
-        </>
-      )}
+      <SplashScreen />
+      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <Outlet />
+      <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
 }

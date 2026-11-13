@@ -6,7 +6,6 @@
 - Delivery partner panel (/delivery) — pickups, active deliveries, COD collection, call customer
 - Splash screen + animations
 - Capacitor config for Android APK (loads live site)
-- Bilingual notice-only payment hold on every app page with a shared seven-day deadline and expiry notice (presentation-only)
 
 ## Open
 - [ ] User: git pull + run Android build commands (APK test)
