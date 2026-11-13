@@ -43,7 +43,7 @@ function CartPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-8 pt-4">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-28 pt-4">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold">{t("yourCart")}</h1>
           {state.cart.length > 0 && (

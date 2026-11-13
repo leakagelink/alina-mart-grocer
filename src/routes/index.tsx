@@ -272,7 +272,7 @@ function Home() {
       {count > 0 && (
         <Link
           to="/cart"
-          className="animate-pop fixed bottom-20 left-1/2 z-40 w-[92%] max-w-md -translate-x-1/2 rounded-xl bg-primary px-4 py-3 text-primary-foreground shadow-lg"
+          className="animate-pop fixed bottom-28 left-1/2 z-40 w-[92%] max-w-md -translate-x-1/2 rounded-xl bg-primary px-4 py-3 text-primary-foreground shadow-lg"
         >
           <div className="flex items-center justify-between text-sm font-bold">
             <span>

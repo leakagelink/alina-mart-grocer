@@ -68,7 +68,7 @@ function ProductDetail() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-32 pt-4">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-48 pt-4">
         {/* Product hero */}
         <div className="animate-fade-up relative grid h-56 place-items-center overflow-hidden rounded-3xl border bg-surface text-8xl sm:h-64">
           <ProductImage product={product} className="p-4" />
@@ -161,8 +161,8 @@ function ProductDetail() {
       </main>
 
       {/* Sticky add-to-cart bar */}
-      <div className="fixed inset-x-0 bottom-14 z-30 border-t bg-card/95 px-4 py-3 backdrop-blur sm:bottom-0">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
+      <div className="fixed inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-30 mx-auto max-w-md px-3">
+        <div className="flex w-full items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-2.5 shadow-lift">
           <div className="min-w-0">
             <p className="truncate text-sm font-bold">{product.name}</p>
             <p className="text-xs text-muted-foreground">

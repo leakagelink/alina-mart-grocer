@@ -26,7 +26,7 @@ export function BottomNav() {
     : items;
 
   return (
-    <nav className="sticky bottom-0 z-30 px-3 pb-3 pt-1">
+    <nav className="sticky bottom-0 z-30 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-1">
       <div className="glass mx-auto flex max-w-md rounded-3xl border p-1.5 shadow-lift">
         {navItems.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? path === "/" : path.startsWith(to);

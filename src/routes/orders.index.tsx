@@ -27,7 +27,7 @@ function Orders() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-8 pt-4">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-28 pt-4">
         <h1 className="text-lg font-bold">My orders</h1>
         {state.notifications.length > 0 && (
           <div className="mt-3 space-y-2">

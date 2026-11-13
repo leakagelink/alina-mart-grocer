@@ -117,7 +117,7 @@ function Checkout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-10 pt-4">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-28 pt-4">
         <h1 className="text-lg font-bold">Checkout</h1>
 
         <div className="animate-fade-up mt-4 space-y-3 rounded-2xl border bg-card p-4">
