@@ -25,7 +25,7 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
           <img
             src={logo.url}
             alt="Martigo"
-            className="h-9 w-9 shrink-0 drop-shadow sm:h-10 sm:w-10"
+            className="animate-float h-9 w-9 shrink-0 drop-shadow sm:h-10 sm:w-10"
           />
           <span className="truncate text-base font-extrabold leading-none sm:text-lg">
             Marti<span className="text-secondary">go</span>

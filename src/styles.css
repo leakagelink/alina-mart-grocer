@@ -244,3 +244,28 @@
     opacity: 1;
   }
 }
+
+/* ===== Global motion effects ===== */
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { 0% { transform: translateX(-120%); } 100% { transform: translateX(220%); } }
+@keyframes float-y { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@utility animate-page-in { animation: page-in .45s cubic-bezier(.2,.8,.2,1) both; }
+@utility animate-float { animation: float-y 3s ease-in-out infinite; }
+@utility shine {
+  position: relative; overflow: hidden;
+  &::after { content: ""; position: absolute; inset: 0; width: 40%;
+    background: linear-gradient(100deg, transparent, color-mix(in oklab, var(--background) 45%, transparent), transparent);
+    animation: shimmer 2.8s ease-in-out infinite; pointer-events: none; }
+}
+@layer base {
+  main { animation: page-in .45s cubic-bezier(.2,.8,.2,1) both; }
+  button, a { transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease; }
+  button:active:not(:disabled), a:active { transform: scale(.96); }
+  img { transition: transform .3s ease; }
+  .animate-card-in:hover { transform: translateY(-3px); }
+  .animate-card-in:hover img { transform: scale(1.06); }
+  .animate-card-in:nth-child(2){animation-delay:.04s}.animate-card-in:nth-child(3){animation-delay:.08s}
+  .animate-card-in:nth-child(4){animation-delay:.12s}.animate-card-in:nth-child(5){animation-delay:.16s}
+  .animate-card-in:nth-child(6){animation-delay:.2s}
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
