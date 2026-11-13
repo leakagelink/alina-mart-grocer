@@ -5,6 +5,7 @@
 - Admin panel (/admin) — orders, products, stock, stats
 - Delivery partner panel (/delivery) — pickups, active deliveries, COD collection, call customer
 - Splash screen + animations
+- Real product photos for all 24 seeded products (emoji fallback; admin can paste a photo URL)
 - Capacitor config for Android APK (loads live site)
 
 ## Open

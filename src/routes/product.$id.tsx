@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ProductCard";
 import { useLang } from "@/lib/i18n";
+import { ProductImage } from "@/components/ProductImage";
 import {
   addToCart,
   CATEGORIES,
@@ -69,8 +70,8 @@ function ProductDetail() {
       <Header />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-32 pt-4">
         {/* Product hero */}
-        <div className="animate-fade-up relative grid h-56 place-items-center rounded-3xl border bg-surface text-8xl sm:h-64">
-          <span>{product.emoji}</span>
+        <div className="animate-fade-up relative grid h-56 place-items-center overflow-hidden rounded-3xl border bg-surface text-8xl sm:h-64">
+          <ProductImage product={product} className="p-4" />
           {off > 0 && (
             <span className="absolute left-3 top-3 rounded-lg bg-secondary px-2 py-1 text-xs font-bold text-secondary-foreground">
               {off}% {t("off")}

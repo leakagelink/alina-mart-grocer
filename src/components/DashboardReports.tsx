@@ -1,5 +1,6 @@
 import { CalendarDays, IndianRupee, Package, TriangleAlert, TrendingUp } from "lucide-react";
 import { inr, useStore } from "@/lib/store";
+import { ProductImage } from "@/components/ProductImage";
 
 export function DashboardReports() {
   const state = useStore();
@@ -25,10 +26,10 @@ export function DashboardReports() {
   });
   const maxRevenue = Math.max(1, ...days.map((d) => d.revenue));
 
-  const sold = new Map<string, { name: string; emoji: string; qty: number; amount: number }>();
+  const sold = new Map<string, { id: string; name: string; emoji: string; qty: number; amount: number }>();
   for (const o of valid) {
     for (const it of o.items) {
-      const cur = sold.get(it.productId) ?? { name: it.name, emoji: it.emoji, qty: 0, amount: 0 };
+      const cur = sold.get(it.productId) ?? { id: it.productId, name: it.name, emoji: it.emoji, qty: 0, amount: 0 };
       cur.qty += it.qty;
       cur.amount += it.qty * it.price;
       sold.set(it.productId, cur);
@@ -77,7 +78,9 @@ export function DashboardReports() {
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-accent text-xs font-bold text-accent-foreground">
                     {i + 1}
                   </span>
-                  <span>{tp.emoji}</span>
+                  <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface text-base">
+                    <ProductImage product={tp} />
+                  </span>
                   <span className="min-w-0 flex-1 truncate">{tp.name}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">
                     {tp.qty} sold • {inr(tp.amount)}
@@ -98,7 +101,9 @@ export function DashboardReports() {
             <div className="mt-3 space-y-2">
               {low.map((p) => (
                 <div key={p.id} className="flex items-center gap-2 text-sm">
-                  <span>{p.emoji}</span>
+                  <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface text-base">
+                    <ProductImage product={p} />
+                  </span>
                   <span className="min-w-0 flex-1 truncate">{p.name}</span>
                   <span
                     className={`shrink-0 rounded-lg px-2 py-0.5 text-xs font-bold ${

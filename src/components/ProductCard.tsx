@@ -1,6 +1,7 @@
 import { Minus, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n";
+import { ProductImage } from "@/components/ProductImage";
 import { addToCart, inr, removeOne, useStore, type Product } from "@/lib/store";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
@@ -21,7 +22,11 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         className="relative grid h-28 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent via-surface to-card text-6xl"
         aria-label={`${product.name} details`}
       >
-        <span className="drop-shadow-md transition-transform duration-300 group-hover:scale-110">{product.emoji}</span>
+        <ProductImage
+          product={product}
+          className="p-1.5 transition-transform duration-300 group-hover:scale-110"
+          emojiClassName="drop-shadow-md transition-transform duration-300 group-hover:scale-110"
+        />
         {off > 0 && (
           <span className="absolute left-0 top-0 rounded-br-xl rounded-tl-2xl bg-secondary px-2 py-1 shadow text-[10px] font-bold text-secondary-foreground">
             {off}% {t("off")}

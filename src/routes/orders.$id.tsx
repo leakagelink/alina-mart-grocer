@@ -4,6 +4,7 @@ import { Bike, CheckCircle2, Package, PhoneCall, Home } from "lucide-react";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { STATUS_LABEL, hydrate, inr, useStore, type OrderStatus } from "@/lib/store";
+import { ProductImage } from "@/components/ProductImage";
 
 export const Route = createFileRoute("/orders/$id")({
   head: () => ({
@@ -111,7 +112,16 @@ function TrackOrder() {
           <div className="mt-2 space-y-2">
             {order.items.map((it) => (
               <div key={it.productId} className="flex items-center gap-3 text-sm">
-                <span className="text-xl">{it.emoji}</span>
+                <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface text-xl">
+                  <ProductImage
+                    product={{
+                      id: it.productId,
+                      name: it.name,
+                      emoji: it.emoji,
+                      image: state.products.find((x) => x.id === it.productId)?.image ?? null,
+                    }}
+                  />
+                </span>
                 <span className="truncate">{it.name}</span>
                 <span className="text-muted-foreground">× {it.qty}</span>
                 <span className="ml-auto font-semibold">{inr(it.price * it.qty)}</span>

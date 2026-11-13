@@ -11,6 +11,7 @@ export type Product = {
   mrp: number;
   unit: string;
   emoji: string;
+  image?: string | null;
   stock: number;
 };
 

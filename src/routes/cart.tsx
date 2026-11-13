@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
+import { ProductImage } from "@/components/ProductImage";
 import {
   addToCart,
   cartSubtotal,
@@ -78,8 +79,8 @@ function CartPage() {
                     className="animate-card-in flex items-center gap-3 rounded-2xl border bg-card p-3"
                     style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
                   >
-                    <span className="grid h-14 w-14 place-items-center rounded-xl bg-surface text-3xl">
-                      {p.emoji}
+                    <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-surface text-3xl">
+                      <ProductImage product={p} className="p-1" />
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">{p.name}</p>

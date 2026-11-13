@@ -12,6 +12,7 @@ import { AppSettingsAdmin } from "@/components/AppSettingsAdmin";
 import { NotificationsAdmin } from "@/components/NotificationsAdmin";
 import { BottomNav } from "@/components/BottomNav";
 import { AdminNav } from "@/components/AdminNav";
+import { ProductImage } from "@/components/ProductImage";
 import { BackButton } from "@/components/BackButton";
 import {
   CATEGORIES,
@@ -84,6 +85,7 @@ function Admin() {
     mrp: "",
     unit: "",
     emoji: "🛍️",
+    image: "",
     stock: "",
   });
 
@@ -119,11 +121,12 @@ function Admin() {
       mrp: Math.max(mrp, price),
       unit: form.unit.trim().slice(0, 20),
       emoji: form.emoji.trim() || "🛍️",
+      image: form.image.trim() || null,
       stock: Number.isFinite(stock) ? stock : 0,
     });
     toast.success(editingId ? "Product updated" : "Product added");
     setEditingId(null);
-    setForm({ ...form, name: "", price: "", mrp: "", unit: "", stock: "" });
+    setForm({ ...form, name: "", price: "", mrp: "", unit: "", stock: "", image: "" });
   };
 
   if (!me || me.role !== "admin") {
@@ -309,6 +312,13 @@ function Admin() {
                 />
                 <input
                   className="rounded-xl border bg-background px-3 py-2 text-sm"
+                  placeholder="Photo URL (optional)"
+                  style={{ gridColumn: "1 / -1" }}
+                  value={form.image}
+                  onChange={(e) => setForm({ ...form, image: e.target.value })}
+                />
+                <input
+                  className="rounded-xl border bg-background px-3 py-2 text-sm"
                   placeholder="Price ₹"
                   inputMode="numeric"
                   value={form.price}
@@ -343,7 +353,7 @@ function Admin() {
               </button>
               {editingId && (
                 <button
-                  onClick={() => { setEditingId(null); setForm({ ...form, name: "", price: "", mrp: "", unit: "", stock: "" }); }}
+                  onClick={() => { setEditingId(null); setForm({ ...form, name: "", price: "", mrp: "", unit: "", stock: "", image: "" }); }}
                   className="ml-2 mt-3 rounded-xl bg-muted px-4 py-2 text-sm font-bold text-muted-foreground"
                 >
                   Cancel
@@ -365,7 +375,9 @@ function Admin() {
                   {state.products.map((p) => (
                     <tr key={p.id} className="border-t">
                       <td className="p-3">
-                        <span className="mr-2">{p.emoji}</span>
+                        <span className="mr-2 inline-grid h-8 w-8 place-items-center overflow-hidden rounded-lg bg-surface align-middle text-lg">
+                          <ProductImage product={p} />
+                        </span>
                         {p.name}
                         <span className="ml-1 text-xs text-muted-foreground">({p.unit})</span>
                       </td>
@@ -395,7 +407,7 @@ function Admin() {
                         <button
                           onClick={() => {
                             setEditingId(p.id);
-                            setForm({ name: p.name, category: p.category, price: String(p.price), mrp: String(p.mrp), unit: p.unit, emoji: p.emoji, stock: String(p.stock) });
+                            setForm({ name: p.name, category: p.category, price: String(p.price), mrp: String(p.mrp), unit: p.unit, emoji: p.emoji, image: p.image ?? "", stock: String(p.stock) });
                             window.scrollTo({ top: 0, behavior: "smooth" });
                           }}
                           className="text-muted-foreground hover:text-primary"

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ProductImage } from "@/components/ProductImage";
 import {
   ArrowLeft,
   Bell,
@@ -509,6 +510,7 @@ function ReturnDialog({ order, onClose }: { order: Order; onClose: () => void })
 }
 
 function OrderDetail({ order, onClose }: { order: Order; onClose: () => void }) {
+  const state = useStore();
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 sm:items-center" onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} className="animate-fade-up max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-card p-5 sm:rounded-3xl">
@@ -520,8 +522,20 @@ function OrderDetail({ order, onClose }: { order: Order; onClose: () => void }) 
         </div>
         <div className="mt-3 space-y-2">
           {order.items.map((i) => (
-            <div key={i.productId} className="flex items-center justify-between text-sm">
-              <span>{i.emoji} {i.name} × {i.qty}</span>
+            <div key={i.productId} className="flex items-center justify-between gap-2 text-sm">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-surface text-base">
+                  <ProductImage
+                    product={{
+                      id: i.productId,
+                      name: i.name,
+                      emoji: i.emoji,
+                      image: state.products.find((x) => x.id === i.productId)?.image ?? null,
+                    }}
+                  />
+                </span>
+                <span className="truncate">{i.name} × {i.qty}</span>
+              </span>
               <span className="font-semibold">{inr(i.price * i.qty)}</span>
             </div>
           ))}
