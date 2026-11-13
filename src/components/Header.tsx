@@ -18,7 +18,7 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
   useEffect(() => { hydrateAccounts(); }, []);
 
   return (
-    <header className="sticky top-0 z-30 brand-gradient text-primary-foreground">
+    <header className="sticky top-0 z-30 brand-gradient rounded-b-3xl text-primary-foreground shadow-lift">
       <div className="mx-auto flex max-w-5xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4">
         <BackButton />
         <Link to="/" className="flex min-w-0 items-center gap-2">

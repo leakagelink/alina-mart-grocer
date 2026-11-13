@@ -56,8 +56,10 @@
 }
 
 :root {
-  --radius: 0.9rem;
-  --background: oklch(0.99 0.008 120);
+  --radius: 1.1rem;
+  --shadow-soft: 0 1px 2px oklch(0.25 0.05 150 / 4%), 0 8px 24px -8px oklch(0.25 0.05 150 / 12%);
+  --shadow-lift: 0 16px 36px -12px oklch(0.42 0.13 152 / 28%);
+  --background: oklch(0.975 0.012 135);
   --foreground: oklch(0.25 0.05 150);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.25 0.05 150);
@@ -73,7 +75,7 @@
   --accent-foreground: oklch(0.35 0.11 152);
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.91 0.02 145);
+  --border: oklch(0.93 0.015 145);
   --input: oklch(0.91 0.02 145);
   --ring: oklch(0.55 0.16 145);
   --leaf: oklch(0.62 0.18 140);
@@ -134,8 +136,21 @@
 
   body {
     background-color: var(--color-background);
+    background-image: radial-gradient(60rem 30rem at 100% -10%, color-mix(in oklab, var(--leaf) 12%, transparent), transparent 60%),
+      radial-gradient(40rem 24rem at -10% 10%, color-mix(in oklab, var(--secondary) 8%, transparent), transparent 60%);
+    background-attachment: fixed;
     color: var(--color-foreground);
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
+  h1, h2, h3 { letter-spacing: -0.02em; }
+  /* Modern soft cards everywhere: replace flat borders with elevation */
+  .bg-card.border, .bg-card.rounded-2xl, .bg-card.rounded-xl {
+    border-color: color-mix(in oklab, var(--border) 60%, transparent);
+    box-shadow: var(--shadow-soft);
+  }
+  input, select, textarea { border-radius: 0.8rem; transition: box-shadow .2s, border-color .2s; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 15%, transparent); }
 }
 
 @utility brand-gradient {
@@ -269,3 +284,10 @@
   .animate-card-in:nth-child(6){animation-delay:.2s}
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+@utility glass {
+  background: color-mix(in oklab, var(--card) 78%, transparent);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+}
+@utility shadow-lift { box-shadow: var(--shadow-lift); }
