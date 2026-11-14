@@ -147,7 +147,7 @@ export async function signUp(input: { role: Role; name: string; phone: string; p
 }
 
 export async function logIn(phone: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email: emailFor(phone), password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email: phone.includes("@") ? phone.trim().toLowerCase() : emailFor(phone), password });
   if (error) throw new Error(msg(error));
   await loadAccounts(data.user.id);
   const a = currentAccount(state);
@@ -189,7 +189,7 @@ export async function changePassword(id: string, oldPw: string, newPw: string) {
   const a = state.accounts.find((x) => x.id === id);
   if (!a) throw new Error("Account nahi mila");
   if (newPw.length < 6) throw new Error("Naya password kam se kam 6 characters ka hona chahiye");
-  const { error: e1 } = await supabase.auth.signInWithPassword({ email: emailFor(a.phone), password: oldPw });
+  const { error: e1 } = await supabase.auth.signInWithPassword({ email: (await supabase.auth.getUser()).data.user?.email ?? emailFor(a.phone), password: oldPw });
   if (e1) throw new Error("Purana password galat hai");
   const { error } = await supabase.auth.updateUser({ password: newPw, current_password: oldPw } as never);
   if (error) throw new Error(error.message);

@@ -43,7 +43,7 @@ function SignupPage() {
   const run = async (): Promise<unknown> => {
     void 0;
     const ph = phone.trim();
-    if (!/^\d{10}$/.test(ph)) return toast.error("10 digit mobile number daaliye");
+    if (!(mode === "login" && ph.includes("@")) && !/^\d{10}$/.test(ph)) return toast.error("10 digit mobile number daaliye");
     if (password.length < 6) return toast.error("Password kam se kam 6 characters ka hona chahiye");
     try {
       if (mode === "signup") {
@@ -108,8 +108,8 @@ function SignupPage() {
           </>
         )}
 
-        <label className="mt-3 block text-xs font-bold">Mobile number</label>
-        <input value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))} inputMode="numeric" maxLength={10} className={input} placeholder="10 digit number" />
+        <label className="mt-3 block text-xs font-bold">{mode === "login" ? "Mobile number / Email" : "Mobile number"}</label>
+        <input value={phone} onChange={(e) => setPhone(mode === "login" ? e.target.value.trim() : e.target.value.replace(/\D/g, ""))} inputMode={mode === "login" ? "email" : "numeric"} maxLength={mode === "login" ? 80 : 10} className={input} placeholder={mode === "login" ? "10 digit number ya email" : "10 digit number"} />
         <label className="mt-3 block text-xs font-bold">Password</label>
         <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" maxLength={40} className={input} placeholder="Kam se kam 6 characters" />
 
