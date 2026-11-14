@@ -126,6 +126,7 @@ const DEFAULT_PRODUCTS: Product[] = [
 ];
 
 const CART_KEY = "alina-cart-v2";
+const CATALOG_KEY = "martigo-catalog-v1";
 
 export const DEFAULT_SETTINGS: AppSettings = {
   deliveryFee: 25,
@@ -204,6 +205,11 @@ export function loadAll() {
       cashDeposits: ledger.filter((l) => l.kind === "deposit").map((l) => ({ ...l.data, riderId: l.rider_id })),
       payouts: ledger.filter((l) => l.kind === "payout").map((l) => ({ ...l.data, riderId: l.rider_id })),
     };
+    try {
+      localStorage.setItem(CATALOG_KEY, JSON.stringify({ products, coupons: state.coupons, settings: state.settings }));
+    } catch {
+      /* ignore */
+    }
     emit();
   })().finally(() => {
     loading = null;
@@ -218,6 +224,13 @@ export function hydrate() {
   try {
     const raw = localStorage.getItem(CART_KEY);
     if (raw) state = { ...state, cart: JSON.parse(raw) as CartItem[] };
+    // Show the last-known catalogue instantly; fresh data replaces it below.
+    const cat = localStorage.getItem(CATALOG_KEY);
+    if (cat) {
+      const c = JSON.parse(cat);
+      state = { ...state, products: c.products ?? state.products, coupons: c.coupons ?? [], settings: { ...DEFAULT_SETTINGS, ...(c.settings ?? {}) } };
+    }
+    emit();
   } catch {
     /* ignore */
   }

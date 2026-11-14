@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import logo from "@/assets/martigo-icon.png.asset.json";
 
-const SPLASH_MS = 2100;
-const FADE_MS = 400;
+const SPLASH_MS = 700;
+const FADE_MS = 250;
 
 export function SplashScreen() {
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return !sessionStorage.getItem("martigo-splash-seen");
-  });
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!sessionStorage.getItem("martigo-splash-seen")) setVisible(true);
+  }, []);
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
