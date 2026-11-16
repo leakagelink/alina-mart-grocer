@@ -13,6 +13,7 @@ export type Product = {
   emoji: string;
   image?: string | null;
   stock: number;
+  vendorId?: string | null;
 };
 
 export type CartItem = { productId: string; qty: number };
@@ -186,7 +187,7 @@ export function loadAll() {
   if (loading) return loading;
   loading = (async () => {
     const [pr, co, se, no, or, le] = await Promise.all([
-      supabase.from("products").select("data").order("created_at", { ascending: false }),
+      supabase.from("products").select("data, vendor_id").order("created_at", { ascending: false }),
       supabase.from("coupons").select("data"),
       supabase.from("app_settings").select("data").eq("id", 1).maybeSingle(),
       supabase.from("notifications").select("data").order("created_at", { ascending: false }),
@@ -194,7 +195,10 @@ export function loadAll() {
       supabase.from("rider_ledger").select("kind, rider_id, data").order("created_at", { ascending: false }),
     ]);
     const ledger = (le.data ?? []) as { kind: string; rider_id: string; data: any }[];
-    const products = (pr.data ?? []).map((r: any) => r.data as Product);
+    const products = (pr.data ?? []).map((r: any) => ({
+      ...(r.data as Product),
+      vendorId: (r.vendor_id ?? null) as string | null,
+    }));
     state = {
       ...state,
       products,
@@ -401,12 +405,26 @@ export function upsertProduct(product: Product) {
       ? state.products.map((x) => (x.id === product.id ? product : x))
       : [product, ...state.products],
   });
-  write(supabase.from("products").upsert({ id: product.id, data: product as never }));
+  write(
+    supabase
+      .from("products")
+      .upsert({
+        id: product.id,
+        data: product as never,
+        ...(product.vendorId ? { vendor_id: product.vendorId } : {}),
+      }),
+  );
 }
 
-export function deleteProduct(id: string) {
+export function deleteProduct(id: string, vendorId?: string | null) {
   set({ ...state, products: state.products.filter((x) => x.id !== id) });
-  write(supabase.from("products").delete().eq("id", id));
+  let q = supabase.from("products").delete().eq("id", id);
+  if (vendorId) q = q.eq("vendor_id", vendorId);
+  write(q);
+}
+
+export function ownProducts(s: State, vendorId: string) {
+  return s.products.filter((p) => p.vendorId === vendorId);
 }
 
 export const STATUS_LABEL: Record<OrderStatus, string> = {

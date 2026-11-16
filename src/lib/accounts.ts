@@ -2,8 +2,22 @@ import { useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { adminDeleteUser, adminResetPassword } from "@/lib/admin-users.functions";
 
-export type Role = "customer" | "delivery" | "admin";
+export type Role = "customer" | "delivery" | "vendor" | "admin";
 export type KycStatus = "not_submitted" | "submitted" | "approved" | "rejected";
+export type VendorStatus = "not_submitted" | "submitted" | "approved" | "rejected";
+export type VendorApplication = {
+  shopName: string;
+  ownerName: string;
+  phone: string;
+  address: string;
+  gst?: string | null;
+  bankAccount?: string | null;
+  ifsc?: string | null;
+  status: VendorStatus;
+  rejectReason?: string | null;
+  docs: KycDoc[];
+  submittedAt?: number | null;
+};
 export type KycDoc = { label: string; fileName: string; dataUrl: string };
 export type Kyc = {
   fullName: string;
@@ -38,6 +52,8 @@ export type Account = {
   kyc?: Kyc;
   rejectReason?: string | undefined;
   blocked?: boolean;
+  vendorStatus?: VendorStatus;
+  vendor?: VendorApplication;
 };
 
 type S = { accounts: Account[]; sessionId: string | null; ready: boolean };
@@ -63,26 +79,37 @@ async function loadAccounts(sessionId: string | null) {
     setState({ accounts: [], sessionId: null, ready: true });
     return;
   }
-  const [{ data: profiles }, { data: roles }] = await Promise.all([
+  const [{ data: profiles }, { data: roles }, { data: vendors }] = await Promise.all([
     supabase.from("profiles").select("*"),
     supabase.from("user_roles").select("user_id, role"),
+    supabase.from("vendors").select("*"),
   ]);
   const roleOf = (id: string): Role => {
     const r = (roles ?? []).filter((x) => x.user_id === id).map((x) => x.role as Role);
-    return r.includes("admin") ? "admin" : r.includes("delivery") ? "delivery" : "customer";
+    return r.includes("admin")
+      ? "admin"
+      : r.includes("delivery")
+        ? "delivery"
+        : r.includes("vendor")
+          ? "vendor"
+          : "customer";
   };
-  const accounts: Account[] = (profiles ?? []).map((p: any) => ({
-    id: p.id,
-    role: roleOf(p.id),
-    name: p.name,
-    phone: p.phone,
-    createdAt: new Date(p.created_at).getTime(),
-    addresses: (p.addresses ?? []) as Address[],
-    kycStatus: (p.kyc_status ?? undefined) as KycStatus | undefined,
-    kyc: (p.kyc ?? undefined) as Kyc | undefined,
-    rejectReason: p.reject_reason ?? undefined,
-    blocked: p.blocked,
-  })) as Account[];
+  const accounts: Account[] = (profiles ?? []).map((p: any) => {
+    const v = (vendors ?? []).find((x: any) => x.user_id === p.id);
+    return {
+      id: p.id,
+      role: roleOf(p.id),
+      name: p.name,
+      phone: p.phone,
+      createdAt: new Date(p.created_at).getTime(),
+      addresses: (p.addresses ?? []) as Address[],
+      kycStatus: (p.kyc_status ?? undefined) as KycStatus | undefined,
+      kyc: (p.kyc ?? undefined) as Kyc | undefined,
+      rejectReason: p.reject_reason ?? undefined,
+      blocked: p.blocked,
+      ...(v ? { vendorStatus: (v.status ?? "not_submitted") as VendorStatus, vendor: vendorOf(v) } : {}),
+    };
+  }) as Account[];
   setState({ accounts, sessionId, ready: true });
 }
 
@@ -106,6 +133,9 @@ export function hydrateAccounts() {
   supabase
     .channel("profiles-rt")
     .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => {
+      if (state.sessionId) loadAccounts(state.sessionId);
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "vendors" }, () => {
       if (state.sessionId) loadAccounts(state.sessionId);
     })
     .subscribe();
@@ -231,4 +261,68 @@ export async function resetPassword(id: string, pw: string) {
 export async function deleteAccount(id: string) {
   await adminDeleteUser({ data: { id } });
   await loadAccounts(state.sessionId);
+}
+
+// ---------- Vendor (seller) applications ----------
+
+function vendorOf(v: any): VendorApplication {
+  const k = (v.kyc ?? {}) as { docs?: KycDoc[]; submittedAt?: number };
+  return {
+    shopName: v.shop_name ?? "",
+    ownerName: v.owner_name ?? "",
+    phone: v.phone ?? "",
+    address: v.address ?? "",
+    gst: v.gst ?? null,
+    bankAccount: v.bank_account ?? null,
+    ifsc: v.ifsc ?? null,
+    status: (v.status ?? "not_submitted") as VendorStatus,
+    rejectReason: v.reject_reason ?? null,
+    docs: (k.docs ?? []) as KycDoc[],
+    submittedAt: k.submittedAt ?? null,
+  };
+}
+
+async function patchVendor(id: string, p: Record<string, unknown>) {
+  const { error } = await supabase.from("vendors").upsert({ user_id: id, ...p } as never, {
+    onConflict: "user_id",
+  });
+  if (error) throw new Error(error.message);
+  await loadAccounts(state.sessionId);
+}
+
+export type VendorApplicationInput = {
+  shopName: string;
+  ownerName: string;
+  address: string;
+  gst?: string;
+  bankAccount: string;
+  ifsc: string;
+  docs: KycDoc[];
+};
+
+export function submitVendorApplication(id: string, input: VendorApplicationInput) {
+  if (input.shopName.trim().length < 3) throw new Error("Dukaan ka naam kam se kam 3 characters ka hona chahiye");
+  if (input.ownerName.trim().length < 2) throw new Error("Maalik ka naam daaliye");
+  if (input.address.trim().length < 10) throw new Error("Poora address daaliye");
+  if (!/^\d{9,18}$/.test(input.bankAccount)) throw new Error("Bank account number sahi daaliye");
+  if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(input.ifsc.toUpperCase())) throw new Error("IFSC code sahi daaliye (e.g. HDFC0001234)");
+  if (input.docs.length < 3) throw new Error("Kam se kam 3 documents upload kariye");
+  return patchVendor(id, {
+    shop_name: input.shopName.trim().slice(0, 60),
+    owner_name: input.ownerName.trim().slice(0, 60),
+    address: input.address.trim().slice(0, 200),
+    gst: input.gst?.trim().slice(0, 20) || null,
+    bank_account: input.bankAccount.trim(),
+    ifsc: input.ifsc.trim().toUpperCase(),
+    kyc: { docs: input.docs, submittedAt: Date.now() },
+    status: "submitted",
+  });
+}
+
+export function approveVendor(id: string) {
+  return patchVendor(id, { status: "approved", reject_reason: null });
+}
+
+export function rejectVendor(id: string, reason: string) {
+  return patchVendor(id, { status: "rejected", reject_reason: reason.slice(0, 200) });
 }

@@ -62,6 +62,30 @@ export type Database = {
         }
         Relationships: []
       }
+      order_vendors: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          order_id: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id: string
+          order_id: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          order_id?: string
+          vendor_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
@@ -88,16 +112,19 @@ export type Database = {
           created_at: string
           data: Json
           id: string
+          vendor_id: string | null
         }
         Insert: {
           created_at?: string
           data: Json
           id: string
+          vendor_id?: string | null
         }
         Update: {
           created_at?: string
           data?: Json
           id?: string
+          vendor_id?: string | null
         }
         Relationships: []
       }
@@ -182,6 +209,81 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_ledger: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          kind: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id: string
+          kind: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          kind?: string
+          vendor_id?: string
+        }
+        Relationships: []
+      }
+      vendors: {
+        Row: {
+          address: string
+          bank_account: string | null
+          created_at: string
+          gst: string | null
+          id: string
+          ifsc: string | null
+          kyc: Json | null
+          owner_name: string
+          phone: string
+          reject_reason: string | null
+          shop_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string
+          bank_account?: string | null
+          created_at?: string
+          gst?: string | null
+          id?: string
+          ifsc?: string | null
+          kyc?: Json | null
+          owner_name?: string
+          phone?: string
+          reject_reason?: string | null
+          shop_name?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          bank_account?: string | null
+          created_at?: string
+          gst?: string | null
+          id?: string
+          ifsc?: string | null
+          kyc?: Json | null
+          owner_name?: string
+          phone?: string
+          reject_reason?: string | null
+          shop_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -195,10 +297,11 @@ export type Database = {
         Returns: boolean
       }
       is_approved_rider: { Args: { _uid: string }; Returns: boolean }
+      is_approved_vendor: { Args: { _uid: string }; Returns: boolean }
       place_order: { Args: { p_order: Json }; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "delivery" | "customer"
+      app_role: "admin" | "delivery" | "customer" | "vendor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -326,7 +429,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "delivery", "customer"],
+      app_role: ["admin", "delivery", "customer", "vendor"],
     },
   },
 } as const

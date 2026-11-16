@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794817964078,
+      "tag": "0000_add_vendor_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794817996156,
+      "tag": "0001_create_vendor_workspace",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794818021794,
+      "tag": "0002_allow_vendor_self_submit",
+      "breakpoints": true
+    }
+  ]
+}
