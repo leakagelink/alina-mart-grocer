@@ -77,11 +77,11 @@ function SignupPage() {
   if (me) return <ProfileView me={me} />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center brand-gradient p-4">
+    <div className="flex min-h-screen items-center justify-center brand-gradient px-3 py-6 sm:p-4">
       <BackButton floating />
-      <form onSubmit={submit} className="animate-fade-up w-full max-w-sm rounded-3xl bg-card p-6 shadow-2xl">
-        <img src={logo.url} alt="Martigo" className="mx-auto h-12 w-auto" />
-        <h1 className="mt-2 text-center text-xl font-extrabold">
+      <form onSubmit={submit} className="animate-fade-up my-auto w-full max-w-sm rounded-3xl bg-card p-4 shadow-2xl sm:p-6">
+        <img src={logo.url} alt="Martigo" className="mx-auto h-10 w-auto sm:h-12" />
+        <h1 className="mt-2 text-center text-lg font-extrabold sm:text-xl">
           {mode === "signup" ? "Account banaiye" : "Login kariye"}
         </h1>
 
@@ -97,18 +97,18 @@ function SignupPage() {
         {mode === "signup" && (
           <>
             <p className="mt-4 text-xs font-bold">Aap kaun hain?</p>
-            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="mt-2 grid grid-cols-3 gap-1.5 sm:gap-2">
               {([
                 { r: "customer", t: "Customer", d: "Saman order karein", I: ShoppingBag },
-                { r: "delivery", t: "Delivery Partner", d: "Deliver karke kamaayein", I: Bike },
+                { r: "delivery", t: "Delivery", d: "Deliver karke kamaayein", I: Bike },
                 { r: "vendor", t: "Vendor", d: "Apna saman bechein", I: Store },
               ] as const).map(({ r, t, d, I }) => (
                 <button key={r} type="button" onClick={() => setRole(r)}
-                  className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-left transition active:scale-95 ${role === r ? "border-primary bg-primary/10" : "border-border"}`}>
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 p-2.5 text-center transition active:scale-95 sm:flex-row sm:items-center sm:gap-3 sm:p-3 sm:text-left ${role === r ? "border-primary bg-primary/10" : "border-border"}`}>
                   <I className="h-6 w-6 shrink-0 text-primary" />
                   <span className="min-w-0">
-                    <span className="block text-sm font-extrabold">{t}</span>
-                    <span className="block text-[11px] text-muted-foreground">{d}</span>
+                    <span className="block truncate text-xs font-extrabold sm:text-sm">{t}</span>
+                    <span className="hidden text-[11px] text-muted-foreground sm:block">{d}</span>
                   </span>
                 </button>
               ))}
@@ -141,7 +141,7 @@ function ProfileView({ me }: { me: Account }) {
   const input = "mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm";
 
   return (
-    <div className="min-h-screen brand-gradient p-4 pb-10 pt-16">
+    <div className="min-h-screen brand-gradient px-3 pb-10 pt-16 sm:p-4 sm:pt-16">
       <BackButton floating />
       <div className="animate-fade-up mx-auto w-full max-w-md">
         {/* Header card */}
@@ -181,8 +181,8 @@ function ProfileView({ me }: { me: Account }) {
             { t: "password", label: "Password", I: KeyRound },
           ] as const).map(({ t, label, I }) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex items-center justify-center gap-1 rounded-xl py-2.5 ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-              <I className="h-3.5 w-3.5" /> {label}
+              className={`flex min-w-0 items-center justify-center gap-1 truncate rounded-xl px-1 py-2.5 ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+              <I className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{label}</span>
             </button>
           ))}
         </div>
