@@ -7,6 +7,7 @@
 - Splash screen + animations
 - Real product photos for all 24 seeded products (emoji fallback; admin can paste a photo URL)
 - Capacitor config for Android APK (loads live site)
+- Vendor system: vendor signup, shop application (KYC-style), admin approve/reject, vendor's own products, vendor orders, earnings + payout request, admin marks payout paid
 
 ## Open
 - [ ] User: git pull + run Android build commands (APK test)
