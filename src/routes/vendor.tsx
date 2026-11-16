@@ -151,7 +151,7 @@ function VendorPanel() {
     );
   }
 
-  const mine = ownProducts(store.products, me.id);
+  const mine = ownProducts(store, me.id);
   const rows = vs.rows.filter((r) => r.vendorId === me.id);
   const payouts = vs.payouts.filter((p) => p.vendorId === me.id);
   const earned = vendorEarnings(rows);
@@ -335,7 +335,7 @@ const EMPTY = { name: "", category: "fruits", price: "", mrp: "", unit: "", emoj
 
 function ProductsTab({ vendorId }: { vendorId: string }) {
   const store = useStore();
-  const mine = ownProducts(store.products, vendorId);
+  const mine = ownProducts(store, vendorId);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY);
 

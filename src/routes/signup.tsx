@@ -1,7 +1,7 @@
 import { BackButton } from "@/components/BackButton";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bike, ChevronRight, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Trash2, User } from "lucide-react";
+import { Bike, ChevronRight, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Store, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/martigo-logo-full.png.asset.json";
 import { changePassword, currentAccount, deleteAddress, hydrateAccounts, logIn, logOut, saveAddress, setDefaultAddress, signUp, updateProfile, useAccounts, type Account, type Address, type Role } from "@/lib/accounts";
@@ -33,6 +33,7 @@ function SignupPage() {
   const go = (a: Account) => {
     if (a.role === "admin") nav({ to: "/admin" });
     else if (a.role === "delivery") nav({ to: a.kycStatus === "approved" ? "/delivery" : "/kyc" });
+    else if (a.role === "vendor") nav({ to: a.vendorStatus === "approved" ? "/vendor" : "/vendor-kyc" });
     else nav({ to: "/" });
   };
 
@@ -49,7 +50,13 @@ function SignupPage() {
       if (mode === "signup") {
         if (name.trim().length < 2) return toast.error("Naam daaliye");
         const a = await signUp({ role, name: name.trim().slice(0, 60), phone: ph, password });
-        toast.success(role === "delivery" ? "Account ban gaya! Ab KYC complete kariye" : "Welcome to Martigo!");
+        toast.success(
+          role === "delivery"
+            ? "Account ban gaya! Ab KYC complete kariye"
+            : role === "vendor"
+              ? "Account ban gaya! Ab dukaan ki details bhariye"
+              : "Welcome to Martigo!",
+        );
         go(a);
       } else {
         const a = await logIn(ph, password);
@@ -90,16 +97,19 @@ function SignupPage() {
         {mode === "signup" && (
           <>
             <p className="mt-4 text-xs font-bold">Aap kaun hain?</p>
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
               {([
                 { r: "customer", t: "Customer", d: "Saman order karein", I: ShoppingBag },
                 { r: "delivery", t: "Delivery Partner", d: "Deliver karke kamaayein", I: Bike },
+                { r: "vendor", t: "Vendor", d: "Apna saman bechein", I: Store },
               ] as const).map(({ r, t, d, I }) => (
                 <button key={r} type="button" onClick={() => setRole(r)}
-                  className={`rounded-2xl border-2 p-3 text-left transition active:scale-95 ${role === r ? "border-primary bg-primary/10" : "border-border"}`}>
-                  <I className="h-6 w-6 text-primary" />
-                  <p className="mt-1 text-sm font-extrabold">{t}</p>
-                  <p className="text-[11px] text-muted-foreground">{d}</p>
+                  className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-left transition active:scale-95 ${role === r ? "border-primary bg-primary/10" : "border-border"}`}>
+                  <I className="h-6 w-6 shrink-0 text-primary" />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-extrabold">{t}</span>
+                    <span className="block text-[11px] text-muted-foreground">{d}</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -142,7 +152,7 @@ function ProfileView({ me }: { me: Account }) {
           <h1 className="mt-2 text-xl font-extrabold">{me.name}</h1>
           <p className="text-sm text-muted-foreground">{me.phone}</p>
           <p className="mt-1 inline-block rounded-full bg-muted px-3 py-1 text-xs font-bold capitalize">
-            {me.role === "delivery" ? "Delivery Partner" : me.role}
+            {roleLabel(me.role)}
           </p>
         </div>
 
@@ -153,6 +163,9 @@ function ProfileView({ me }: { me: Account }) {
           )}
           {me.role === "delivery" && (
             <QuickLink to={me.kycStatus === "approved" ? "/delivery" : "/kyc"} label={me.kycStatus === "approved" ? "Delivery Panel" : "KYC Status"} />
+          )}
+          {me.role === "vendor" && (
+            <QuickLink to={me.vendorStatus === "approved" ? "/vendor" : "/vendor-kyc"} label={me.vendorStatus === "approved" ? "Vendor Panel" : "Vendor Application"} />
           )}
           {me.role === "customer" && (
             <QuickLink to="/orders" label="Mere Orders" />
@@ -189,6 +202,16 @@ function ProfileView({ me }: { me: Account }) {
       </div>
     </div>
   );
+}
+
+function roleLabel(role: Role) {
+  return role === "delivery"
+    ? "Delivery Partner"
+    : role === "vendor"
+      ? "Vendor"
+      : role === "admin"
+        ? "Admin"
+        : "Customer";
 }
 
 function QuickLink({ to, label }: { to: string; label: string }) {
@@ -237,7 +260,7 @@ function ProfileTab({ me, input }: { me: Account; input: string }) {
       <p className="mt-1 rounded-xl bg-muted px-3 py-2.5 text-sm text-muted-foreground">{me.phone} (change nahi ho sakta)</p>
       <label className="mt-3 block text-xs font-bold">Account type</label>
       <p className="mt-1 rounded-xl bg-muted px-3 py-2.5 text-sm capitalize text-muted-foreground">
-        {me.role === "delivery" ? "Delivery Partner" : me.role}
+        {roleLabel(me.role)}
       </p>
     </div>
   );

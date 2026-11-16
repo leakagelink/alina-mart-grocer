@@ -10,6 +10,7 @@ import {
   Bike,
   Users,
   Truck,
+  Store,
   X,
 } from "lucide-react";
 
@@ -21,6 +22,7 @@ export type AdminNavTab =
   | "notifications"
   | "settings"
   | "riders"
+  | "vendors"
   | "users"
   | "shipping";
 
@@ -34,6 +36,7 @@ const MAIN: { id: AdminNavTab; label: string; icon: typeof LayoutDashboard }[] =
 const MORE: { id: AdminNavTab; label: string; icon: typeof Bell }[] = [
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "riders", label: "Delivery KYC", icon: Bike },
+  { id: "vendors", label: "Vendors & payouts", icon: Store },
   { id: "users", label: "Users", icon: Users },
   { id: "shipping", label: "Shipping partners", icon: Truck },
   { id: "settings", label: "App settings", icon: Settings },

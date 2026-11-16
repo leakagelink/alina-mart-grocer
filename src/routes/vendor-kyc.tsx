@@ -10,6 +10,7 @@ import {
   submitVendorApplication,
   useAccounts,
   type KycDoc,
+  type VendorApplication,
 } from "@/lib/accounts";
 import { compressImage } from "@/lib/image";
 
@@ -95,7 +96,7 @@ function VendorKycPage() {
       name={acc.name}
       phone={acc.phone}
       vendor={acc.vendor}
-      rejectReason={acc.vendorStatus === "rejected" ? acc.vendor?.rejectReason : undefined}
+      rejectReason={acc.vendorStatus === "rejected" ? acc.vendor?.rejectReason ?? undefined : undefined}
       onLogout={out}
     />
   );
@@ -112,8 +113,8 @@ function VendorForm({
   accId: string;
   name: string;
   phone: string;
-  vendor?: { shopName: string; address: string; gst?: string | null; bankAccount?: string | null; ifsc?: string | null; docs: KycDoc[] };
-  rejectReason?: string | undefined;
+  vendor: VendorApplication | undefined;
+  rejectReason: string | undefined;
   onLogout: () => void;
 }) {
   const [f, setF] = useState({

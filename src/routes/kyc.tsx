@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, Clock, FileUp, LogOut, ShieldCheck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { currentAccount, hydrateAccounts, logOut, submitKyc, useAccounts, type KycDoc } from "@/lib/accounts";
+import { compressImage } from "@/lib/image";
 
 export const Route = createFileRoute("/kyc")({
   head: () => ({
@@ -20,27 +21,6 @@ export const Route = createFileRoute("/kyc")({
 });
 
 const DOCS = ["Aadhaar card (front)", "Aadhaar card (back)", "PAN card", "Driving licence", "Vehicle RC", "Selfie photo"];
-
-function compress(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onerror = rej;
-    r.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const s = Math.min(1, 800 / Math.max(img.width, img.height));
-        const c = document.createElement("canvas");
-        c.width = img.width * s;
-        c.height = img.height * s;
-        c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
-        res(c.toDataURL("image/jpeg", 0.6));
-      };
-      img.onerror = () => rej(new Error("Sirf photo (JPG/PNG) upload kariye"));
-      img.src = r.result as string;
-    };
-    r.readAsDataURL(file);
-  });
-}
 
 function KycPage() {
   const s = useAccounts();
@@ -90,7 +70,7 @@ function KycForm({ accId, name, rejectReason, onLogout }: { accId: string; name:
   const upload = async (label: string, file?: File) => {
     if (!file) return;
     try {
-      const dataUrl = await compress(file);
+      const dataUrl = await compressImage(file);
       setDocs((d) => ({ ...d, [label]: { label, fileName: file.name, dataUrl } }));
     } catch (e) { toast.error((e as Error).message); }
   };

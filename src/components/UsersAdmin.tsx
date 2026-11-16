@@ -11,7 +11,12 @@ import {
 } from "@/lib/accounts";
 import { useStore } from "@/lib/store";
 
-const ROLE_LABEL: Record<Role, string> = { customer: "Customer", delivery: "Delivery partner", admin: "Admin" };
+const ROLE_LABEL: Record<Role, string> = {
+  customer: "Customer",
+  delivery: "Delivery partner",
+  vendor: "Vendor",
+  admin: "Admin",
+};
 
 export function UsersAdmin() {
   const s = useAccounts();
@@ -44,6 +49,7 @@ export function UsersAdmin() {
           <option value="all">All users ({s.accounts.length})</option>
           <option value="customer">Customers</option>
           <option value="delivery">Delivery partners</option>
+          <option value="vendor">Vendors</option>
           <option value="admin">Admins</option>
         </select>
       </div>

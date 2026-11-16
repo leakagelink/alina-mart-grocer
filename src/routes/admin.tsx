@@ -4,6 +4,7 @@ import { IndianRupee, PackageCheck, Pencil, ShoppingBag, TriangleAlert, Trash2 }
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { RidersKyc } from "@/components/RidersKyc";
+import { VendorsAdmin } from "@/components/VendorsAdmin";
 import { UsersAdmin } from "@/components/UsersAdmin";
 import { ShippingPartners } from "@/components/ShippingPartners";
 import { DashboardReports } from "@/components/DashboardReports";
@@ -54,6 +55,7 @@ const TABS = [
   "notifications",
   "settings",
   "riders",
+  "vendors",
   "users",
   "shipping",
 ] as const;
@@ -66,6 +68,7 @@ const TAB_LABELS: Record<AdminTab, string> = {
   notifications: "Notifications",
   settings: "App settings",
   riders: "Delivery KYC",
+  vendors: "Vendors",
   users: "Users",
   shipping: "Shipping partners",
 };
@@ -229,6 +232,8 @@ function Admin() {
           <ShippingPartners />
         ) : tab === "riders" ? (
           <RidersKyc />
+        ) : tab === "vendors" ? (
+          <VendorsAdmin />
         ) : tab === "dashboard" ? (
           <DashboardReports />
         ) : tab === "coupons" ? (
