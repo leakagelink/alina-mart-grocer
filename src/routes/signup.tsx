@@ -1,7 +1,7 @@
 import { BackButton } from "@/components/BackButton";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bike, ChevronRight, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Store, Trash2, User } from "lucide-react";
+import { Bike, ChevronRight, Eye, EyeOff, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Store, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/martigo-logo-full.png.asset.json";
 import { changePassword, currentAccount, deleteAddress, hydrateAccounts, logIn, logOut, saveAddress, setDefaultAddress, signUp, updateProfile, useAccounts, type Account, type Address, type Role } from "@/lib/accounts";
@@ -19,6 +19,18 @@ export const Route = createFileRoute("/signup")({
   }),
   component: SignupPage,
 });
+
+function PasswordInput({ value, onChange, className, placeholder, maxLength = 40 }: { value: string; onChange: (v: string) => void; className: string; placeholder?: string; maxLength?: number }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input value={value} onChange={(e) => onChange(e.target.value)} type={show ? "text" : "password"} maxLength={maxLength} className={`${className} pr-11`} placeholder={placeholder} />
+      <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? "Password chhupaiye" : "Password dikhayiye"} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground active:scale-90">
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
 
 function SignupPage() {
   const nav = useNavigate();
@@ -121,7 +133,7 @@ function SignupPage() {
         <label className="mt-3 block text-xs font-bold">{mode === "login" ? "Mobile number / Email" : "Mobile number"}</label>
         <input value={phone} onChange={(e) => setPhone(mode === "login" ? e.target.value.trim() : e.target.value.replace(/\D/g, ""))} inputMode={mode === "login" ? "email" : "numeric"} maxLength={mode === "login" ? 80 : 10} className={input} placeholder={mode === "login" ? "10 digit number ya email" : "10 digit number"} />
         <label className="mt-3 block text-xs font-bold">Password</label>
-        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" maxLength={40} className={input} placeholder="Kam se kam 6 characters" />
+        <PasswordInput value={password} onChange={setPassword} className={input} placeholder="Kam se kam 6 characters" />
 
         <button className="mt-5 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
           {mode === "signup" ? "Account banaiye" : "Login"}
@@ -370,11 +382,11 @@ function PasswordTab({ me, input }: { me: Account; input: string }) {
     <div>
       <h2 className="text-sm font-extrabold">Password Badliye</h2>
       <label className="mt-4 block text-xs font-bold">Purana password</label>
-      <input type="password" value={oldPw} onChange={(e) => setOldPw(e.target.value)} className={input} maxLength={40} />
+      <PasswordInput value={oldPw} onChange={setOldPw} className={input} />
       <label className="mt-3 block text-xs font-bold">Naya password</label>
-      <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} className={input} maxLength={40} placeholder="Kam se kam 6 characters" />
+      <PasswordInput value={newPw} onChange={setNewPw} className={input} placeholder="Kam se kam 6 characters" />
       <label className="mt-3 block text-xs font-bold">Naya password dobara</label>
-      <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={input} maxLength={40} />
+      <PasswordInput value={confirm} onChange={setConfirm} className={input} />
       <button onClick={save} className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
         Password Update Kariye
       </button>
