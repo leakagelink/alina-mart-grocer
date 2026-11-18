@@ -1,8 +1,9 @@
 import { BackButton } from "@/components/BackButton";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bike, ChevronRight, Eye, EyeOff, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Store, Trash2, User } from "lucide-react";
+import { Bike, ChevronRight, Eye, EyeOff, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Store, Trash2, User, Languages } from "lucide-react";
 import { toast } from "sonner";
+import { useLang } from "@/lib/i18n";
 import logo from "@/assets/martigo-logo-full.png.asset.json";
 import { changePassword, currentAccount, deleteAddress, hydrateAccounts, logIn, logOut, saveAddress, setDefaultAddress, signUp, updateProfile, useAccounts, type Account, type Address, type Role } from "@/lib/accounts";
 
@@ -36,6 +37,7 @@ function SignupPage() {
   const nav = useNavigate();
   const [mode, setMode] = useState<"signup" | "login">("signup");
   const [role, setRole] = useState<Role>("customer");
+  const [pendingAcc, setPendingAcc] = useState<Account | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "">("");
@@ -74,7 +76,7 @@ function SignupPage() {
               ? "Account ban gaya! Ab dukaan ki details bhariye"
               : "Welcome to Martigo!",
         );
-        go(a);
+        setPendingAcc(a);
       } else {
         const a = await logIn(ph, password);
         toast.success(`Welcome ${a.name}!`);
@@ -91,6 +93,13 @@ function SignupPage() {
   const accState = useAccounts();
   const me = currentAccount(accState);
 
+  if (pendingAcc) return (
+    <div className="flex min-h-screen items-center justify-center brand-gradient px-3 py-6 sm:p-4">
+      <div className="animate-fade-up w-full max-w-md rounded-3xl bg-card p-6 shadow-2xl">
+        <LanguagePicker onDone={() => { const a = pendingAcc; setPendingAcc(null); go(a); }} />
+      </div>
+    </div>
+  );
   if (me) return <ProfileView me={me} />;
 
   return (
@@ -168,10 +177,11 @@ function SignupPage() {
 
 // ================= PROFILE VIEW =================
 
-type Tab = "profile" | "addresses" | "password";
+type Tab = "profile" | "addresses" | "password" | "language";
 
 function ProfileView({ me }: { me: Account }) {
   const [tab, setTab] = useState<Tab>("profile");
+  const { lang } = useLang();
   const input = "mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm";
 
   return (
@@ -208,11 +218,12 @@ function ProfileView({ me }: { me: Account }) {
         </div>
 
         {/* Tabs */}
-        <div className="mt-3 grid grid-cols-3 gap-1 rounded-2xl bg-card p-1 text-xs font-bold shadow-xl">
+        <div className="mt-3 grid grid-cols-4 gap-1 rounded-2xl bg-card p-1 text-xs font-bold shadow-xl">
           {([
             { t: "profile", label: "Profile", I: User },
             { t: "addresses", label: "Addresses", I: MapPin },
             { t: "password", label: "Password", I: KeyRound },
+            { t: "language", label: lang === "hi" ? "भाषा" : "Language", I: Languages },
           ] as const).map(({ t, label, I }) => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex min-w-0 items-center justify-center gap-1 truncate rounded-xl px-1 py-2.5 ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
@@ -225,6 +236,7 @@ function ProfileView({ me }: { me: Account }) {
           {tab === "profile" && <ProfileTab me={me} input={input} />}
           {tab === "addresses" && <AddressesTab me={me} input={input} />}
           {tab === "password" && <PasswordTab me={me} input={input} />}
+          {tab === "language" && <LanguagePicker onDone={() => toast.success(lang === "hi" ? "भाषा बदल दी गई" : "Language updated")} />}
         </div>
 
         <button
@@ -412,6 +424,29 @@ function PasswordTab({ me, input }: { me: Account; input: string }) {
       <button onClick={save} className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
         Password Update Kariye
       </button>
+    </div>
+  );
+}
+
+export function LanguagePicker({ onDone }: { onDone?: () => void }) {
+  const { lang, setLang } = useLang();
+  const opts = [
+    { l: "hi" as const, title: "हिन्दी", sub: "Hindi" },
+    { l: "en" as const, title: "English", sub: "अंग्रेज़ी" },
+  ];
+  return (
+    <div>
+      <h2 className="text-lg font-extrabold">अपनी भाषा चुनें / Choose your language</h2>
+      <p className="mt-1 text-xs text-muted-foreground">Settings → Language se baad me kabhi bhi badal sakte hain.</p>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        {opts.map((o) => (
+          <button key={o.l} type="button" onClick={() => { setLang(o.l); onDone?.(); }}
+            className={`rounded-2xl border-2 p-4 text-left active:scale-95 ${lang === o.l ? "border-primary bg-primary/10" : "border-border"}`}>
+            <div className="text-xl font-extrabold">{o.title}</div>
+            <div className="text-xs text-muted-foreground">{o.sub}</div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
