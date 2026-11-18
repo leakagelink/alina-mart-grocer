@@ -3,7 +3,6 @@
   "appName": "Martigo",
   "webDir": "www",
   "server": {
-    "url": "https://alinamart.store",
     "cleartext": false,
     "androidScheme": "https",
     "allowNavigation": ["alinamart.store", "*.alinamart.store", "*.supabase.co"]

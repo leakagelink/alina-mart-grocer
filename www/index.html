@@ -1,11 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
   <head>
     <meta charset="utf-8" />
     <title>Martigo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e9f4e" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(160deg, #0e9f4e 0%, #0b7a3c 55%, #075e2e 100%);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 24px;
+        text-align: center;
+        overflow: hidden;
+      }
+      .wrap { max-width: 340px; width: 100%; animation: rise 0.6s ease both; }
+      @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+      .logo {
+        width: 96px; height: 96px; margin: 0 auto 20px;
+        background: #ffffff; border-radius: 28px;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+        animation: floaty 3s ease-in-out infinite;
+      }
+      @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+      .logo svg { width: 52px; height: 52px; }
+      h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+      .tagline { margin-top: 6px; font-size: 15px; opacity: 0.9; }
+      .spinner {
+        width: 34px; height: 34px; margin: 34px auto 0;
+        border: 3px solid rgba(255, 255, 255, 0.35);
+        border-top-color: #ffffff; border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .loading-text { margin-top: 14px; font-size: 14px; opacity: 0.85; }
+
+      /* Offline card */
+      #offline { display: none; }
+      body.is-offline { background: linear-gradient(160deg, #f7faf8 0%, #eef4ef 100%); color: #1d2b22; }
+      body.is-offline #loading { display: none; }
+      body.is-offline #offline { display: block; }
+      .card {
+        background: #ffffff; border-radius: 24px; padding: 32px 24px;
+        box-shadow: 0 18px 50px rgba(10, 60, 30, 0.12);
+        animation: rise 0.5s ease both;
+      }
+      .wifi-icon {
+        width: 84px; height: 84px; margin: 0 auto 18px;
+        background: #fdeaea; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .wifi-icon svg { width: 42px; height: 42px; }
+      .card h2 { font-size: 21px; font-weight: 800; color: #152a1d; }
+      .card p { margin-top: 10px; font-size: 14.5px; line-height: 1.65; color: #5a6b60; }
+      .retry {
+        margin-top: 22px; width: 100%; border: 0; cursor: pointer;
+        background: #0e9f4e; color: #ffffff;
+        font-size: 16px; font-weight: 700; font-family: inherit;
+        padding: 14px 20px; border-radius: 14px;
+        box-shadow: 0 10px 24px rgba(14, 159, 78, 0.35);
+        transition: transform 0.15s ease, background 0.15s ease;
+      }
+      .retry:active { transform: scale(0.97); background: #0b7a3c; }
+      .hint { margin-top: 14px; font-size: 12.5px; color: #8a9a8f; }
+      .brand-small { margin-top: 26px; font-size: 13px; font-weight: 700; color: #0e9f4e; letter-spacing: 0.4px; }
+    </style>
   </head>
-  <body style="font-family: system-ui, sans-serif; text-align: center; padding-top: 40%;">
-    <p>Martigo loading…</p>
+  <body>
+    <!-- Loading / splash state -->
+    <div class="wrap" id="loading">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0e9f4e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="20" r="1.6" fill="#0e9f4e" stroke="none" />
+          <circle cx="17" cy="20" r="1.6" fill="#0e9f4e" stroke="none" />
+          <path d="M2.5 3.5h2.2l2.5 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.3L21.5 7.5H6" />
+        </svg>
+      </div>
+      <h1>Martigo</h1>
+      <p class="tagline">Groceries, minutes mein</p>
+      <div class="spinner"></div>
+      <p class="loading-text">Load ho raha hai…</p>
+    </div>
+
+    <!-- Offline state -->
+    <div class="wrap" id="offline">
+      <div class="card">
+        <div class="wifi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d64545" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.5a10 10 0 0 1 14 0" />
+            <path d="M8.5 16a5 5 0 0 1 7 0" />
+            <circle cx="12" cy="19.2" r="1.3" fill="#d64545" stroke="none" />
+            <line x1="3" y1="3" x2="21" y2="21" />
+          </svg>
+        </div>
+        <h2>Internet band hai</h2>
+        <p>Martigo istemal karne ke liye internet connection zaroori hai. Kripya apna mobile data ya Wi‑Fi chalu karein, phir dobara koshish karein.</p>
+        <button class="retry" id="retryBtn" type="button">Dobara koshish karein</button>
+        <p class="hint">Net wapas aate hi app apne aap khul jayegi.</p>
+      </div>
+      <p class="brand-small">MARTIGO</p>
+    </div>
+
+    <script>
+      var APP_URL = "https://alinamart.store";
+      var redirected = false;
+
+      function goToApp() {
+        if (redirected) return;
+        redirected = true;
+        window.location.replace(APP_URL);
+      }
+
+      function showOffline() {
+        document.body.classList.add("is-offline");
+      }
+
+      function checkAndGo() {
+        if (redirected) return;
+        if (!navigator.onLine) { showOffline(); return; }
+        // Real connectivity ping (navigator.onLine alone is unreliable on Android)
+        var done = false;
+        var timer = setTimeout(function () {
+          if (!done) { done = true; showOffline(); }
+        }, 6000);
+        fetch(APP_URL + "/favicon.png", { method: "HEAD", cache: "no-store", mode: "no-cors" })
+          .then(function () {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            document.body.classList.remove("is-offline");
+            goToApp();
+          })
+          .catch(function () {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            showOffline();
+          });
+      }
+
+      document.getElementById("retryBtn").addEventListener("click", function () {
+        document.body.classList.remove("is-offline");
+        checkAndGo();
+      });
+
+      // Net wapas aate hi auto-open
+      window.addEventListener("online", function () {
+        document.body.classList.remove("is-offline");
+        checkAndGo();
+      });
+      window.addEventListener("offline", showOffline);
+
+      // Thoda splash dikhakar check karein (smooth feel ke liye)
+      setTimeout(checkAndGo, 900);
+    </script>
   </body>
 </html>
