@@ -36,7 +36,9 @@ function SignupPage() {
   const nav = useNavigate();
   const [mode, setMode] = useState<"signup" | "login">("signup");
   const [role, setRole] = useState<Role>("customer");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [gender, setGender] = useState<"male" | "female" | "">("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
 
@@ -60,8 +62,11 @@ function SignupPage() {
     if (password.length < 6) return toast.error("Password kam se kam 6 characters ka hona chahiye");
     try {
       if (mode === "signup") {
-        if (name.trim().length < 2) return toast.error("Naam daaliye");
-        const a = await signUp({ role, name: name.trim().slice(0, 60), phone: ph, password });
+        if (!gender) return toast.error("Male ya Female chuniye");
+        if (firstName.trim().length < 2) return toast.error("First name daaliye");
+        if (lastName.trim().length < 1) return toast.error("Last name daaliye");
+        const full = `${firstName.trim()} ${lastName.trim()}`.slice(0, 60);
+        const a = await signUp({ role, name: full, phone: ph, password, gender });
         toast.success(
           role === "delivery"
             ? "Account ban gaya! Ab KYC complete kariye"
@@ -125,8 +130,25 @@ function SignupPage() {
                 </button>
               ))}
             </div>
-            <label className="mt-4 block text-xs font-bold">Poora naam</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className={input} maxLength={60} />
+            <p className="mt-4 text-xs font-bold">Gender</p>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+              {([["male", "Male"], ["female", "Female"]] as const).map(([g, l]) => (
+                <button key={g} type="button" onClick={() => setGender(g)}
+                  className={`rounded-xl border-2 py-2 text-sm font-bold transition active:scale-95 ${gender === g ? "border-primary bg-primary/10" : "border-border"}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-bold">First name</label>
+                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={input} maxLength={30} autoComplete="given-name" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold">Last name</label>
+                <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={input} maxLength={30} autoComplete="family-name" />
+              </div>
+            </div>
           </>
         )}
 

@@ -163,12 +163,12 @@ function msg(e: { message: string }) {
   return e.message;
 }
 
-export async function signUp(input: { role: Role; name: string; phone: string; password: string }) {
+export async function signUp(input: { role: Role; name: string; phone: string; password: string; gender?: string }) {
   if (input.role === "admin") throw new Error("Not allowed");
   const { data, error } = await supabase.auth.signUp({
     email: emailFor(input.phone),
     password: input.password,
-    options: { data: { name: input.name, phone: input.phone, role: input.role } },
+    options: { data: { name: input.name, phone: input.phone, role: input.role, gender: input.gender ?? null } },
   });
   if (error) throw new Error(msg(error));
   if (!data.session) throw new Error("Account ban gaya, ab login kariye");
