@@ -121,11 +121,11 @@ function SignupPage() {
                 { r: "vendor", t: "Vendor", d: "Apna saman bechein", I: Store },
               ] as const).map(({ r, t, d, I }) => (
                 <button key={r} type="button" onClick={() => setRole(r)}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 p-2.5 text-center transition active:scale-95 sm:flex-row sm:items-center sm:gap-3 sm:p-3 sm:text-left ${role === r ? "border-primary bg-primary/10" : "border-border"}`}>
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 p-2.5 text-center transition active:scale-95 ${role === r ? "border-primary bg-primary/10" : "border-border"}`}>
                   <I className="h-6 w-6 shrink-0 text-primary" />
                   <span className="min-w-0">
-                    <span className="block truncate text-xs font-extrabold sm:text-sm">{t}</span>
-                    <span className="hidden text-[11px] text-muted-foreground sm:block">{d}</span>
+                    <span className="block truncate text-xs font-extrabold">{t}</span>
+                    
                   </span>
                 </button>
               ))}
