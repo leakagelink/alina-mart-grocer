@@ -300,3 +300,16 @@ body { overflow-x: hidden; min-height: 100dvh; }
 @media (min-width: 1536px) { html { font-size: 17px; } }
 img, video, canvas, iframe { max-width: 100%; }
 table { display: block; overflow-x: auto; max-width: 100%; }
+
+/* ===== App-like feel: long-press text selection band (inputs mein allowed) ===== */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
