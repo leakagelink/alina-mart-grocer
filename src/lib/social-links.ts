@@ -10,10 +10,13 @@ export const socialLinkSchema = z.object({
     } catch { return false; }
   }),
 }).refine(link => {
-  const host = new URL(link.url).hostname.replace(/^www\./, "");
-  if (link.platform === "other") return true;
-  const hosts = link.platform === "facebook" ? ["facebook.com"] : link.platform === "instagram" ? ["instagram.com"] : ["x.com", "twitter.com"];
-  return hosts.includes(host) && new URL(link.url).pathname !== "/";
+  try {
+    const url = new URL(link.url);
+    const host = url.hostname.replace(/^www\./, "");
+    if (link.platform === "other") return true;
+    const hosts = link.platform === "facebook" ? ["facebook.com"] : link.platform === "instagram" ? ["instagram.com"] : ["x.com", "twitter.com"];
+    return hosts.includes(host) && url.pathname !== "/";
+  } catch { return false; }
 });
 export const socialLinksSchema = z.array(socialLinkSchema).max(10);
 export type SocialLink = z.infer<typeof socialLinkSchema>;
