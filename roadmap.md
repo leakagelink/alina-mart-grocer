@@ -10,7 +10,7 @@
 - Vendor system: vendor signup, shop application (KYC-style), admin approve/reject, vendor's own products, vendor orders, earnings + payout request, admin marks payout paid
 
 ## Open
-- [x] Blinkit-reference UI polish across home sections, shared navigation, product cards and panel surfaces; cart flow and 320/393/768/2277px checked, four home-content tests pass. Admin session did not grant panel access, so signed-in panel visual checks remain unverified.
+- [x] Blinkit-reference UI polish across home sections, shared navigation, product cards and panel surfaces; cart flow and 320/393/768/2277px checked, all 27 product pages and public screens checked in light/dark at phone/desktop widths, reduced-motion verified, four home-content tests pass. Admin session did not grant panel access, so signed-in panel visual checks remain unverified.
 - [x] Blinkit-style home with admin-managed banners, categories and ordered product sections; mobile 320/393px and desktop checked, signed-in admin save/read-back verified.
 - [ ] User: git pull + run Android build commands (APK test)
 - [x] Backend live: login (phone+password), roles, products, orders, coupons, settings, KYC, rider cash/payout, realtime sync
