@@ -9,6 +9,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { BackButton } from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { VoiceSearchButton } from "@/components/VoiceSearchButton";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function Header({ query, onQuery }: { query?: string; onQuery?: (v: string) => void }) {
   const state = useStore();
@@ -38,6 +39,7 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
             <Button asChild variant="ghost" className="hidden sm:flex"><Link to="/admin"><LayoutDashboard className="h-4 w-4" /> {t("admin")}</Link></Button>
           )}
           <LanguageToggle />
+          <NotificationBell />
           <Button asChild variant="ghost" size="icon"><Link to="/signup" aria-label="Account">
             <User className="h-5 w-5" />
           </Link></Button>

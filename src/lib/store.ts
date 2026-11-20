@@ -68,6 +68,10 @@ export type AdminNotification = {
   body: string;
   to: string;
   at: number;
+  titleHi?: string;
+  bodyHi?: string;
+  kind?: "activity" | "admin";
+  orderId?: string;
 };
 
 export type State = {
@@ -502,20 +506,23 @@ export function toggleCoupon(code: string) {
 }
 
 // ---------- Notifications ----------
-export function sendNotification(title: string, body: string, to = "all"): AdminNotification {
+export async function sendNotification(title: string, body: string, to = "all"): Promise<AdminNotification> {
   const n: AdminNotification = {
-    id: "NT" + Date.now().toString().slice(-8),
+    id: "NT" + crypto.randomUUID(),
     title,
     body,
     to,
     at: Date.now(),
+    kind: "admin",
   };
+  const { error } = await supabase.from("notifications").insert({ id: n.id, data: n as never });
+  if (error) throw new Error(error.message);
   set({ ...state, notifications: [n, ...state.notifications] });
-  write(supabase.from("notifications").insert({ id: n.id, data: n as never }));
   return n;
 }
 
-export function deleteNotification(id: string) {
+export async function deleteNotification(id: string) {
+  const { error } = await supabase.from("notifications").delete().eq("id", id);
+  if (error) throw new Error(error.message);
   set({ ...state, notifications: state.notifications.filter((n) => n.id !== id) });
-  write(supabase.from("notifications").delete().eq("id", id));
 }

@@ -186,6 +186,7 @@ export async function logIn(phone: string, password: string) {
     await supabase.auth.signOut();
     throw new Error("Ye account admin ne block kiya hai");
   }
+  void supabase.rpc("record_account_activity", { activity: "login" }).then(() => {});
   return a;
 }
 
@@ -223,6 +224,7 @@ export async function changePassword(id: string, oldPw: string, newPw: string) {
   if (e1) throw new Error("Purana password galat hai");
   const { error } = await supabase.auth.updateUser({ password: newPw, current_password: oldPw } as never);
   if (error) throw new Error(error.message);
+  void supabase.rpc("record_account_activity", { activity: "password" }).then(() => {});
 }
 
 function addrs(id: string) {

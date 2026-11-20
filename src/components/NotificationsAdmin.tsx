@@ -3,25 +3,33 @@ import { Download, Megaphone, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { deleteNotification, hydrate, sendNotification, useStore } from "@/lib/store";
 import { downloadCsv } from "@/lib/export";
+import { Button } from "@/components/ui/button";
+import { useAccounts } from "@/lib/accounts";
 
 export function NotificationsAdmin() {
   const state = useStore();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [to, setTo] = useState("all");
+  const [busy, setBusy] = useState(false);
+  const { accounts } = useAccounts();
 
   useEffect(() => {
     hydrate();
   }, []);
 
-  const send = () => {
+  const send = async () => {
     if (!title.trim() || !body.trim()) {
       toast.error("Title aur message dono likhein");
       return;
     }
-    sendNotification(title.trim().slice(0, 60), body.trim().slice(0, 200));
-    toast.success("Notification bhej diya — customer ke My Orders page par dikhega");
-    setTitle("");
-    setBody("");
+    setBusy(true);
+    try {
+      await sendNotification(title.trim().slice(0, 60), body.trim().slice(0, 200), to);
+      toast.success("Notification bhej diya");
+      setTitle(""); setBody("");
+    } catch { toast.error("Notification nahi bheja gaya. Dobara try karein."); }
+    finally { setBusy(false); }
   };
 
   const exportOrders = () => {
@@ -76,16 +84,20 @@ export function NotificationsAdmin() {
     <div className="mt-4 space-y-4">
       <div className="animate-fade-up rounded-2xl border bg-card p-4">
         <p className="flex items-center gap-2 text-sm font-bold">
-          <Megaphone className="h-4 w-4 text-primary" /> Customer ko notification bhejo
+          <Megaphone className="h-4 w-4 text-primary" /> User ko notification bhejo
         </p>
+        <label className="mt-3 block text-xs font-semibold">Recipient</label>
+        <select aria-label="Notification recipient" value={to} onChange={e => setTo(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm"><option value="all">Sabhi users</option>{accounts.map(a => <option key={a.id} value={a.id}>{a.name || a.phone} · {a.phone} · {a.role}</option>)}</select>
         <input
           className="mt-3 w-full rounded-xl border bg-background px-3 py-2.5 text-sm"
           placeholder="Title (jese: Aaj ka special offer!)"
+          aria-label="Notification title"
           maxLength={60}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
         <textarea
+          aria-label="Notification message"
           rows={2}
           maxLength={200}
           className="mt-2 w-full rounded-xl border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
@@ -93,16 +105,14 @@ export function NotificationsAdmin() {
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
-        <button
+        <Button
           onClick={send}
+          disabled={busy}
           className="mt-3 rounded-xl bg-secondary px-4 py-2 text-sm font-bold text-secondary-foreground"
         >
-          Send notification
-        </button>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Demo mode: notification is device par save hota hai aur customer ke My Orders page par
-          dikhta hai. Live push/SMS backend ke baad judega.
-        </p>
+          {busy ? "Bhej rahe hain…" : "Send notification"}
+        </Button>
+
       </div>
 
       <div className="rounded-2xl border bg-card p-4">
@@ -110,24 +120,24 @@ export function NotificationsAdmin() {
           <Download className="h-4 w-4 text-primary" /> Export (Excel/CSV)
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button
+          <Button
             onClick={exportOrders}
             className="rounded-xl border bg-background px-4 py-2 text-sm font-bold"
           >
             Orders CSV
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={exportProducts}
             className="rounded-xl border bg-background px-4 py-2 text-sm font-bold"
           >
             Products CSV
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={exportCoupons}
             className="rounded-xl border bg-background px-4 py-2 text-sm font-bold"
           >
             Coupons CSV
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -136,29 +146,28 @@ export function NotificationsAdmin() {
         {state.notifications.length === 0 && (
           <p className="py-6 text-center text-sm text-muted-foreground">Abhi koi notification nahi bheja.</p>
         )}
-        {state.notifications.map((n, i) => (
+        {state.notifications.filter(n => n.kind !== "activity").map((n) => (
           <div
             key={n.id}
             className="animate-card-in flex items-start gap-3 rounded-2xl border bg-card p-4"
-            style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
           >
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">📢 {n.title}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">{n.body}</p>
               <p className="mt-1 text-[10px] text-muted-foreground">
-                {new Date(n.at).toLocaleString("en-IN")} • sabhi customers ko
+                {new Date(n.at).toLocaleString("en-IN")} • {n.to === "all" ? "sabhi users" : accounts.find(a => a.id === n.to)?.name || "selected user"}
               </p>
             </div>
-            <button
-              onClick={() => {
-                deleteNotification(n.id);
-                toast.success("Notification hata di");
+            <Button
+              onClick={async () => {
+                try { await deleteNotification(n.id); toast.success("Notification hata di"); }
+                catch { toast.error("Notification nahi hati. Dobara try karein."); }
               }}
               className="shrink-0 text-muted-foreground hover:text-destructive"
               aria-label="Delete notification"
             >
               <Trash2 className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         ))}
       </div>

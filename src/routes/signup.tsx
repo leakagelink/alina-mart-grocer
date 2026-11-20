@@ -214,6 +214,7 @@ function ProfileView({ me }: { me: Account }) {
           {me.role === "customer" && (
             <QuickLink to="/orders" label="Mere Orders" />
           )}
+          <QuickLink to="/notifications" label={lang === "hi" ? "नोटिफिकेशन" : "Notifications"} />
           <QuickLink to="/" label="Home par wapas" />
         </div>
 

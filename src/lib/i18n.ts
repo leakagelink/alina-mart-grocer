@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Lang = "en" | "hi";
 const KEY = "alina-lang";
@@ -11,12 +12,18 @@ if (typeof window !== "undefined") {
 }
 
 export function setLang(l: Lang) {
+  const changed = lang !== l;
   lang = l;
   if (typeof window !== "undefined") {
     window.localStorage.setItem(KEY, l);
     document.documentElement.lang = l;
   }
   subs.forEach((f) => f());
+  if (changed && typeof window !== "undefined") {
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session) void supabase.rpc("record_account_activity", { activity: "language" }).then(() => {});
+    });
+  }
 }
 
 const dict = {

@@ -336,6 +336,10 @@ export type Database = {
       is_approved_rider: { Args: { _uid: string }; Returns: boolean }
       is_approved_vendor: { Args: { _uid: string }; Returns: boolean }
       place_order: { Args: { p_order: Json }; Returns: undefined }
+      record_account_activity: {
+        Args: { activity: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "delivery" | "customer" | "vendor"

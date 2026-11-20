@@ -14,6 +14,7 @@ import logo from "@/assets/martigo-icon.png.asset.json";
 import { OfferCarousel } from "@/components/OfferCarousel";
 import { VoiceSearchButton } from "@/components/VoiceSearchButton";
 import { matchesProductSearch } from "@/lib/product-search";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -60,7 +61,7 @@ function Home() {
             <div className="mt-1 text-[28px] font-extrabold leading-tight sm:text-3xl">{state.settings.deliveryMinutes} {local("minutes", "मिनट")}</div>
             <Link to="/signup" className="mt-1 flex max-w-full items-center gap-1 text-sm"><span className="font-extrabold">{address?.label ?? local("HOME", "घर")}</span><span className="truncate">– {address?.line ?? local("Select delivery address", "डिलीवरी पता चुनें")}</span><ChevronDown className="h-4 w-4 shrink-0" /></Link>
           </div>
-          <div className="flex shrink-0 items-center gap-2 pt-2"><LanguageToggle /><Button asChild variant="outline" size="icon" className="h-11 w-11 rounded-full border-0 bg-card" aria-label="Account"><Link to="/signup"><User /></Link></Button></div>
+          <div className="flex shrink-0 items-center gap-1 pt-2"><LanguageToggle /><NotificationBell /><Button asChild variant="outline" size="icon" className="h-9 w-9 rounded-full border-0 bg-card" aria-label="Account"><Link to="/signup"><User /></Link></Button></div>
         </div>
         <div className="relative mt-4 flex h-12 items-center gap-2 rounded-lg border bg-card px-3 shadow-sm"><Search className="h-5 w-5 shrink-0" /><input aria-label="Search products" value={query} onChange={e => setQuery(e.target.value)} placeholder={t("search")} className="min-w-0 flex-1 border-0 bg-transparent py-3 text-sm outline-none" />{query && <Button variant="ghost" size="icon" className="shrink-0" aria-label="Clear search" onClick={() => setQuery("")}><X /></Button>}<VoiceSearchButton onResult={value => { setCat(null); setQuery(value); }} /></div>
         <div className="hide-scrollbar mt-3 flex gap-5 overflow-x-auto sm:gap-8"><Button variant="ghost" onClick={() => { setCat(null); setQuery(""); }} className={`h-16 shrink-0 flex-col gap-1 rounded-none border-b-4 px-2 text-xs ${cat === null ? "border-primary text-primary" : "border-transparent"}`}><LayoutGrid className="!h-6 !w-6" />{t("all")}</Button>{categories.map(c => <Button key={c.id} variant="ghost" onClick={() => setCat(c.id)} className={`h-16 shrink-0 flex-col gap-1 rounded-none border-b-4 px-1 text-xs ${cat === c.id ? "border-primary text-primary" : "border-transparent"}`}><span className="grid h-7 w-9 place-items-center">{(() => { const p = state.products.find(p => p.id === c.productId) ?? state.products.find(p => p.category === c.id); return c.image ? <img src={c.image} alt="" className="h-full w-full object-contain" /> : p ? <ProductImage product={p} /> : <span className="text-2xl">{c.emoji}</span>; })()}</span><span>{local(c.name,c.nameHi).split(" & ")[0]}</span></Button>)}</div>
