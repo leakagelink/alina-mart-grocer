@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard,
+  PanelsTopLeft,
   ShoppingBag,
   Package,
   TicketPercent,
@@ -16,6 +17,7 @@ import {
 
 export type AdminNavTab =
   | "dashboard"
+  | "home"
   | "orders"
   | "products"
   | "coupons"
@@ -34,6 +36,7 @@ const MAIN: { id: AdminNavTab; label: string; icon: typeof LayoutDashboard }[] =
 ];
 
 const MORE: { id: AdminNavTab; label: string; icon: typeof Bell }[] = [
+  { id: "home", label: "Home screen", icon: PanelsTopLeft },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "riders", label: "Delivery KYC", icon: Bike },
   { id: "vendors", label: "Vendors & payouts", icon: Store },

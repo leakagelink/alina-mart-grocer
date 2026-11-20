@@ -10,6 +10,7 @@
 - Vendor system: vendor signup, shop application (KYC-style), admin approve/reject, vendor's own products, vendor orders, earnings + payout request, admin marks payout paid
 
 ## Open
+- [ ] Blinkit-style home with admin-managed banners, categories and ordered product sections; verify saved changes.
 - [ ] User: git pull + run Android build commands (APK test)
 - [x] Backend live: login (phone+password), roles, products, orders, coupons, settings, KYC, rider cash/payout, realtime sync
 - [ ] Real online payment (Razorpay/UPI) — needs user's Razorpay keys

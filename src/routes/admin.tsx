@@ -10,6 +10,8 @@ import { ShippingPartners } from "@/components/ShippingPartners";
 import { DashboardReports } from "@/components/DashboardReports";
 import { CouponsAdmin } from "@/components/CouponsAdmin";
 import { AppSettingsAdmin } from "@/components/AppSettingsAdmin";
+import { HomeContentAdmin } from "@/components/HomeContentAdmin";
+import { homeContent } from "@/lib/home-content";
 import { NotificationsAdmin } from "@/components/NotificationsAdmin";
 import { BottomNav } from "@/components/BottomNav";
 import { AdminNav } from "@/components/AdminNav";
@@ -49,6 +51,7 @@ const STATUSES: OrderStatus[] = ["placed", "packed", "out_for_delivery", "delive
 
 const TABS = [
   "dashboard",
+  "home",
   "orders",
   "products",
   "coupons",
@@ -62,6 +65,7 @@ const TABS = [
 type AdminTab = (typeof TABS)[number];
 const TAB_LABELS: Record<AdminTab, string> = {
   dashboard: "Dashboard",
+  home: "Home screen",
   orders: "Orders",
   products: "Products",
   coupons: "Coupons",
@@ -242,6 +246,8 @@ function Admin() {
           <NotificationsAdmin />
         ) : tab === "settings" ? (
           <AppSettingsAdmin />
+        ) : tab === "home" ? (
+          <HomeContentAdmin />
         ) : tab === "orders" ? (
           <div className="mt-4 space-y-3">
             {state.orders.length === 0 && (
@@ -303,7 +309,7 @@ function Admin() {
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
                 >
-                  {CATEGORIES.map((c) => (
+                  {homeContent(state.settings.home).categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>

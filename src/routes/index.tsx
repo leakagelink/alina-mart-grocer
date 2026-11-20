@@ -1,11 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { BadgeCheck, ChevronRight, Leaf, Tag, Truck, Zap } from "lucide-react";
-import { Header } from "@/components/Header";
+import { ArrowLeft, ChevronDown, ChevronRight, Search, ShoppingBag, User, LayoutGrid, Clock3 } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductImage } from "@/components/ProductImage";
+import { Button } from "@/components/ui/button";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLang } from "@/lib/i18n";
-import { CATEGORIES, cartCount, cartSubtotal, hydrate, inr, useStore } from "@/lib/store";
+import { homeContent, sectionProducts } from "@/lib/home-content";
+import { currentAccount, hydrateAccounts, useAccounts } from "@/lib/accounts";
+import { cartCount, cartSubtotal, hydrate, inr, useStore } from "@/lib/store";
+import logo from "@/assets/martigo-icon.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,14 +26,7 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Fresh groceries and daily essentials delivered fast. COD & online payment.",
       },
-      {
-        property: "og:image",
-        content: "https://alinamart.store/__l5e/assets-v1/a01d940e-f31d-4bfd-a3e8-a268bb870708/martigo-og.png",
-      },
-      {
-        name: "twitter:image",
-        content: "https://alinamart.store/__l5e/assets-v1/a01d940e-f31d-4bfd-a3e8-a268bb870708/martigo-og.png",
-      },
+
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -39,251 +37,46 @@ export const Route = createFileRoute("/")({
 function Home() {
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<string | null>(null);
-  const [banner, setBanner] = useState(0);
   const state = useStore();
-  const { t, tc } = useLang();
-
-  useEffect(() => {
-    hydrate();
-  }, []);
-
-  const banners = useMemo(
-    () => [
-      { emoji: "🥬", title: t("b1t"), sub: t("b1b"), cat: "fruits" },
-      {
-        emoji: "🚚",
-        title: t("b2t"),
-        sub: `${t("free")} ₹${state.settings.freeDeliveryAbove}+`,
-        cat: null,
-      },
-      { emoji: "🥛", title: t("b3t"), sub: t("b3b"), cat: "dairy" },
-    ],
-    [t, state.settings.freeDeliveryAbove],
-  );
-
-  useEffect(() => {
-    const id = setInterval(() => setBanner((b) => (b + 1) % banners.length), 4000);
-    return () => clearInterval(id);
-  }, [banners.length]);
-
-  const products = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return state.products.filter(
-      (p) => (!cat || p.category === cat) && (!q || p.name.toLowerCase().includes(q)),
-    );
-  }, [state.products, query, cat]);
-
-  const bestsellers = useMemo(
-    () => [...state.products].filter((p) => p.stock > 0).slice(0, 10),
-    [state.products],
-  );
-  const deals = useMemo(
-    () =>
-      [...state.products]
-        .filter((p) => p.mrp > p.price && p.stock > 0)
-        .sort((a, b) => (b.mrp - b.price) / b.mrp - (a.mrp - a.price) / a.mrp)
-        .slice(0, 10),
-    [state.products],
-  );
-
+  const me = currentAccount(useAccounts());
+  const { t, lang } = useLang();
+  const home = homeContent(state.settings.home);
+  const categories = home.categories.filter(c => c.visible);
+  const local = (en: string, hi: string) => lang === "hi" ? hi || en : en;
+  useEffect(() => { hydrate(); hydrateAccounts(); }, []);
+  const products = useMemo(() => state.products.filter(p => (!cat || p.category === cat) && (!query.trim() || p.name.toLowerCase().includes(query.trim().toLowerCase()))), [state.products, cat, query]);
+  const searching = !!query.trim() || cat !== null;
   const count = cartCount(state);
-  const subtotal = cartSubtotal(state);
-  const searching = query.trim().length > 0 || cat !== null;
-  const activeBanner = banners[banner] ?? banners[0]!;
-
-  return (
-    <div className="flex min-h-screen flex-col bg-surface">
-      <Header query={query} onQuery={setQuery} />
-
-      <main className="mx-auto w-full max-w-5xl flex-1 pb-28">
-        {state.settings.announcement && (
-          <div className="brand-gradient px-4 pb-3 text-center text-xs font-semibold text-primary-foreground">
-            📣 {state.settings.announcement}
+  const address = me?.addresses?.find(a => a.isDefault) ?? me?.addresses?.[0];
+  const groups = [...new Set(categories.map(c => c.group))];
+  return <div className="martigo-home min-h-screen bg-card text-foreground">
+    <header className="home-header sticky top-0 z-30 border-b">
+      <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0"><div className="flex items-center gap-2"><img src={logo.url} alt="" className="h-7 w-7" /><h1 className="text-lg font-extrabold">Martigo</h1><span className="hidden text-xs text-muted-foreground sm:inline">{t("superfast")}</span></div>
+            <div className="mt-1 text-[30px] font-extrabold leading-tight sm:text-4xl">{state.settings.deliveryMinutes} {local("minutes", "मिनट")}</div>
+            <Link to="/signup" className="mt-1 flex max-w-full items-center gap-1 text-sm"><span className="font-extrabold">{address?.label ?? local("HOME", "घर")}</span><span className="truncate">– {address?.line ?? local("Select delivery address", "डिलीवरी पता चुनें")}</span><ChevronDown className="h-4 w-4 shrink-0" /></Link>
           </div>
-        )}
-
-        {!searching && (
-          <>
-            {/* Promo banner carousel */}
-            <section className="px-4 pt-4">
-              <button
-                onClick={() => setCat(activeBanner.cat)}
-                className="animate-fade-up relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-accent p-5 text-left"
-              >
-                <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-card text-4xl shadow-sm">
-                  {activeBanner.emoji}
-                </span>
-                <span className="min-w-0">
-                  <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-primary">
-                    <Zap className="h-3 w-3" /> {t("min15")}
-                  </span>
-                  <span className="block truncate text-lg font-extrabold text-accent-foreground">
-                    {activeBanner.title}
-                  </span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {activeBanner.sub}
-                  </span>
-                </span>
-                <span className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">
-                  {t("shopNow")} <ChevronRight className="h-3.5 w-3.5" />
-                </span>
-              </button>
-              <div className="mt-2 flex justify-center gap-1.5">
-                {banners.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setBanner(i)}
-                    aria-label={`Banner ${i + 1}`}
-                    className={`h-1.5 rounded-full transition-all ${
-                      i === banner ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30"
-                    }`}
-                  />
-                ))}
-              </div>
-            </section>
-
-            {/* Category circles */}
-            <section className="mt-5 px-4">
-              <h2 className="mb-3 text-base font-extrabold">{t("shopByCat")}</h2>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-6">
-                {CATEGORIES.map((c, i) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setCat(c.id)}
-                    className="animate-card-in flex flex-col items-center gap-2"
-                    style={{ animationDelay: `${i * 50}ms` }}
-                  >
-                    <span className="grid h-16 w-16 place-items-center rounded-2xl border bg-card text-3xl shadow-sm transition-transform active:scale-90 sm:h-20 sm:w-20">
-                      {c.emoji}
-                    </span>
-                    <span className="text-center text-[11px] font-semibold leading-tight">
-                      {tc(c.id, c.name)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Top deals */}
-            {deals.length > 0 && (
-              <section className="mt-6">
-                <div className="mb-3 flex items-center justify-between px-4">
-                  <h2 className="flex items-center gap-1.5 text-base font-extrabold">
-                    <Tag className="h-4 w-4 text-secondary" /> {t("topDeals")}
-                  </h2>
-                  <button
-                    onClick={() => setCat("fruits")}
-                    className="text-xs font-bold text-primary"
-                  >
-                    {t("viewAll")} →
-                  </button>
-                </div>
-                <div className="hide-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
-                  {deals.map((p, i) => (
-                    <div key={p.id} className="w-[40vw] min-w-[8.5rem] max-w-[11rem] shrink-0">
-                      <ProductCard product={p} index={i} />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Bestsellers */}
-            {bestsellers.length > 0 && (
-              <section className="mt-6">
-                <div className="mb-3 flex items-center justify-between px-4">
-                  <h2 className="flex items-center gap-1.5 text-base font-extrabold">
-                    <BadgeCheck className="h-4 w-4 text-primary" /> {t("bestsellers")}
-                  </h2>
-                </div>
-                <div className="hide-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
-                  {bestsellers.map((p, i) => (
-                    <div key={p.id} className="w-[40vw] min-w-[8.5rem] max-w-[11rem] shrink-0">
-                      <ProductCard product={p} index={i} />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Trust badges */}
-            <section className="mx-4 mt-6 grid grid-cols-3 gap-2 rounded-3xl border bg-card p-4">
-              {[
-                { icon: Leaf, label: t("whyFresh") },
-                { icon: Truck, label: t("whyFast") },
-                { icon: Tag, label: t("whyPrice") },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex flex-col items-center gap-1.5 text-center">
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-accent">
-                    <Icon className="h-5 w-5 text-primary" />
-                  </span>
-                  <span className="text-[11px] font-semibold leading-tight text-muted-foreground">
-                    {label}
-                  </span>
-                </div>
-              ))}
-            </section>
-          </>
-        )}
-
-        {/* Product grid (search/filter results or all) */}
-        <section className="mt-6 px-4">
-          <h2 className="mb-3 text-base font-extrabold">
-            {searching
-              ? cat
-                ? tc(cat, CATEGORIES.find((c) => c.id === cat)?.name ?? "")
-                : t("allProducts")
-              : t("allProducts")}
-          </h2>
-          {searching && (
-            <div className="hide-scrollbar mb-3 flex gap-2 overflow-x-auto pb-1">
-              <button
-                onClick={() => setCat(null)}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                  cat === null ? "border-primary bg-primary text-primary-foreground" : "bg-card"
-                }`}
-              >
-                {t("all")}
-              </button>
-              {CATEGORIES.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setCat(cat === c.id ? null : c.id)}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                    cat === c.id ? "border-primary bg-primary text-primary-foreground" : "bg-card"
-                  }`}
-                >
-                  {c.emoji} {tc(c.id, c.name)}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 xl:grid-cols-5">
-            {products.map((p, i) => (
-              <ProductCard key={p.id} product={p} index={i} />
-            ))}
-          </div>
-          {products.length === 0 && (
-            <p className="py-10 text-center text-sm text-muted-foreground">{t("noProducts")}</p>
-          )}
-        </section>
-      </main>
-
-      {count > 0 && (
-        <Link
-          to="/cart"
-          className="animate-pop fixed bottom-28 left-1/2 z-40 w-[92%] max-w-md -translate-x-1/2 rounded-xl bg-primary px-4 py-3 text-primary-foreground shadow-lg"
-        >
-          <div className="flex items-center justify-between text-sm font-bold">
-            <span>
-              {count} {t("items")} • {inr(subtotal)}
-            </span>
-            <span>{t("viewCart")}</span>
-          </div>
-        </Link>
-      )}
-
-      <BottomNav />
-    </div>
-  );
+          <div className="flex shrink-0 items-center gap-2 pt-2"><LanguageToggle /><Button asChild variant="outline" size="icon" className="h-11 w-11 rounded-full" aria-label="Account"><Link to="/signup"><User /></Link></Button></div>
+        </div>
+        <div className="mt-4 flex h-12 items-center gap-3 rounded-lg border bg-card px-3 shadow-sm"><Search className="h-5 w-5 shrink-0" /><input aria-label="Search products" value={query} onChange={e => setQuery(e.target.value)} placeholder={t("search")} className="min-w-0 flex-1 border-0 bg-transparent py-3 text-sm outline-none" />{query && <Button variant="ghost" size="sm" onClick={() => setQuery("")}>×</Button>}</div>
+        <div className="hide-scrollbar mt-3 flex gap-5 overflow-x-auto sm:gap-8"><Button variant="ghost" onClick={() => { setCat(null); setQuery(""); }} className={`h-16 shrink-0 flex-col gap-1 rounded-none border-b-4 px-2 text-xs ${cat === null ? "border-primary text-primary" : "border-transparent"}`}><LayoutGrid className="!h-6 !w-6" />{t("all")}</Button>{categories.map(c => <Button key={c.id} variant="ghost" onClick={() => setCat(c.id)} className={`h-16 shrink-0 flex-col gap-1 rounded-none border-b-4 px-1 text-xs ${cat === c.id ? "border-primary text-primary" : "border-transparent"}`}><span className="text-2xl">{c.emoji}</span><span>{local(c.name,c.nameHi).split(" & ")[0]}</span></Button>)}</div>
+      </div>
+    </header>
+    <main className="mx-auto max-w-6xl space-y-7 px-4 pb-36 pt-5 sm:px-6 sm:pt-6">
+      {state.settings.announcement && <div className="border-b pb-3 text-sm font-semibold text-primary">{state.settings.announcement}</div>}
+      {!searching && <>
+        <section aria-label="Offers" className="hide-scrollbar flex snap-x gap-4 overflow-x-auto">{home.banners.filter(b => b.visible).map(b => <Button key={b.id} variant="ghost" onClick={() => setCat(b.category || null)} className="relative block h-44 w-full shrink-0 snap-center overflow-hidden rounded-lg p-0 text-left sm:h-64">
+          <img src={b.image} alt="" className="absolute inset-0 h-full w-full object-cover" /><span className="home-banner-copy absolute inset-y-0 left-0 flex w-1/2 flex-col justify-center px-4 sm:px-8"><span className="whitespace-pre-line text-xl font-extrabold leading-tight sm:text-3xl">{local(b.title,b.titleHi)}</span><span className="mt-2 whitespace-normal text-xs sm:text-sm">{local(b.subtitle,b.subtitleHi)}</span><span className="mt-3 flex items-center gap-1 text-xs font-bold text-primary">{t("shopNow")}<ChevronRight /></span></span>
+        </Button>)}</section>
+        <section><h2 className="mb-3 text-lg font-extrabold sm:text-2xl">{local("Frequently bought", "अक्सर खरीदा जाता है")}</h2><div className="hide-scrollbar flex gap-3 overflow-x-auto">{categories.slice(0,4).map(c => { const product = state.products.find(p => p.id === c.productId) ?? state.products.find(p => p.category === c.id); return <Button key={c.id} variant="ghost" onClick={() => setCat(c.id)} className="home-frequent flex h-28 w-40 shrink-0 flex-col rounded-lg px-4 py-2"><span className="h-16 w-24">{product && <ProductImage product={product} />}</span><span className="text-xs font-bold">{local(c.name,c.nameHi)}</span></Button>; })}</div><Button variant="ghost" className="mt-3 h-11 w-full bg-accent text-primary" onClick={() => { setCat(null); document.getElementById("all-products")?.scrollIntoView({behavior:"smooth"}); }}>{t("allProducts")}<ChevronRight /></Button></section>
+        {groups.map(group => { const list = categories.filter(c => c.group === group); return <section key={group}><h2 className="mb-4 text-lg font-extrabold sm:text-2xl">{local(group,list[0]?.groupHi ?? group)}</h2><div className="grid grid-cols-4 gap-x-3 gap-y-5 sm:grid-cols-6 sm:gap-5">{list.map(c => { const product = state.products.find(p => p.id === c.productId) ?? state.products.find(p => p.category === c.id); return <Button key={c.id} variant="ghost" onClick={() => setCat(c.id)} className="flex h-auto min-w-0 flex-col justify-start gap-2 whitespace-normal p-0 hover:bg-transparent"><span className="home-category-image grid aspect-square w-full place-items-center overflow-hidden rounded-lg p-2">{c.image ? <img src={c.image} alt={c.name} className="h-full w-full object-contain" /> : product ? <ProductImage product={product} /> : <span className="text-3xl">{c.emoji}</span>}</span><span className="min-h-9 text-center text-[11px] font-semibold leading-tight sm:text-sm">{local(c.name,c.nameHi)}</span></Button>; })}</div></section>; })}
+        {home.sections.filter(s => s.visible).map(section => { const items = sectionProducts(section,state.products); return items.length ? <section key={section.id}><div className="mb-4 flex items-center justify-between gap-2"><h2 className="text-lg font-extrabold sm:text-2xl">{local(section.title,section.titleHi)}</h2>{section.category && <Button variant="link" size="sm" onClick={() => setCat(section.category)}>{t("viewAll")}<ChevronRight /></Button>}</div><div className="hide-scrollbar flex gap-3 overflow-x-auto pb-1">{items.map(p => <div key={p.id} className="w-[148px] shrink-0 sm:w-[180px]"><ProductCard product={p} compact /></div>)}</div></section> : null; })}
+      </>}
+      <section id="all-products"><div className="mb-4 flex items-center gap-2">{searching && <Button variant="ghost" size="icon" aria-label="Back to home" onClick={() => {setCat(null);setQuery("");}}><ArrowLeft /></Button>}<h2 className="text-lg font-extrabold sm:text-2xl">{cat ? local(categories.find(c=>c.id===cat)?.name ?? cat,categories.find(c=>c.id===cat)?.nameHi ?? cat) : t("allProducts")}</h2></div><div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">{products.map(p => <ProductCard key={p.id} product={p} compact />)}</div>{!products.length && <p className="py-10 text-center text-muted-foreground">{t("noProducts")}</p>}</section>
+      <div className="flex items-center justify-center gap-2 border-t pt-6 text-xs text-muted-foreground"><Clock3 className="h-4 w-4" />{state.settings.deliveryMinutes} {local("minute delivery", "मिनट में डिलीवरी")} · Martigo</div>
+    </main>
+    {count > 0 && <Button asChild className="fixed bottom-24 left-1/2 z-40 h-16 w-[90%] max-w-sm -translate-x-1/2 justify-between rounded-full px-5 shadow-lift"><Link to="/cart"><span className="flex items-center gap-3"><ShoppingBag className="!h-7 !w-7"/><span className="flex flex-col items-start"><span className="text-base font-bold">{t("viewCart").replace(" →", "")}</span><span className="text-xs opacity-80">{count} {t("items")} · {inr(cartSubtotal(state))}</span></span></span><ChevronRight className="!h-6 !w-6" /></Link></Button>}
+    <BottomNav />
+  </div>;
 }

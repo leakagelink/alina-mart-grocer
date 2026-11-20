@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { onAuthChanged } from "@/lib/accounts";
+import type { HomeContent } from "@/lib/home-content";
 
 export type Product = {
   id: string;
@@ -58,6 +59,7 @@ export type AppSettings = {
   codEnabled: boolean;
   onlineEnabled: boolean;
   announcement: string;
+  home?: HomeContent;
 };
 
 export type AdminNotification = {
@@ -447,6 +449,13 @@ export function updateSettings(patch: Partial<AppSettings>) {
   const settings = { ...state.settings, ...patch };
   set({ ...state, settings });
   write(supabase.from("app_settings").upsert({ id: 1, data: settings as never }));
+}
+
+export async function saveHomeContent(home: HomeContent) {
+  const settings = { ...state.settings, home };
+  const { error } = await supabase.from("app_settings").upsert({ id: 1, data: settings as never });
+  if (error) throw new Error(error.message);
+  set({ ...state, settings });
 }
 
 // ---------- Coupons ----------
