@@ -16,7 +16,7 @@ export function ProductImage({ product, className, emojiClassName }: Props) {
         src={src}
         alt={product.name}
         loading="lazy"
-        className={cn("h-full w-full object-contain", className)}
+        className={cn("h-full max-h-full min-h-0 w-full min-w-0 object-contain", className)}
       />
     );
   }
