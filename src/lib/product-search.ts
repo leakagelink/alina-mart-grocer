@@ -1,18 +1,371 @@
-const aliases: Record<string, string> = {
-  दूध: "milk", दुध: "milk", ब्रेड: "bread", आटा: "atta", चावल: "rice", दाल: "dal",
-  अंडे: "eggs", अंडा: "eggs", पनीर: "paneer", दही: "curd", मक्खन: "butter",
-  घी: "ghee", चीनी: "sugar", नमक: "salt", तेल: "oil", चाय: "tea", कॉफी: "coffee",
-  आलू: "potato", टमाटर: "tomato", प्याज: "onion", केला: "banana", केले: "banana",
-  सेब: "apple", बिस्कुट: "biscuits", चिप्स: "chips", साबुन: "soap", अमूल: "amul",
-};
+// Shared Hindi meanings and spelling variants apply to both typed and voice search.
+const concepts: string[][] = [
+  [
+    "milk",
+    "दूध",
+    "दुध"
+  ],
+  [
+    "bread",
+    "ब्रेड",
+    "डबलरोटी"
+  ],
+  [
+    "atta",
+    "flour",
+    "आटा"
+  ],
+  [
+    "wheat",
+    "गेहूं",
+    "गेहूँ",
+    "व्हीट"
+  ],
+  [
+    "whole",
+    "साबुत"
+  ],
+  [
+    "rice",
+    "चावल",
+    "राइस"
+  ],
+  [
+    "basmati",
+    "बासमती"
+  ],
+  [
+    "dal",
+    "दाल"
+  ],
+  [
+    "toor",
+    "arhar",
+    "तूर",
+    "तुअर",
+    "अरहर"
+  ],
+  [
+    "eggs",
+    "egg",
+    "अंडे",
+    "अंडा"
+  ],
+  [
+    "paneer",
+    "पनीर"
+  ],
+  [
+    "curd",
+    "yogurt",
+    "दही"
+  ],
+  [
+    "butter",
+    "मक्खन",
+    "बटर"
+  ],
+  [
+    "ghee",
+    "घी"
+  ],
+  [
+    "sugar",
+    "चीनी",
+    "शक्कर"
+  ],
+  [
+    "salt",
+    "salted",
+    "नमक",
+    "नमकीन"
+  ],
+  [
+    "oil",
+    "तेल"
+  ],
+  [
+    "sunflower",
+    "सूरजमुखी",
+    "सनफ्लावर"
+  ],
+  [
+    "tea",
+    "चाय",
+    "टी"
+  ],
+  [
+    "coffee",
+    "कॉफी"
+  ],
+  [
+    "potato",
+    "आलू"
+  ],
+  [
+    "tomato",
+    "टमाटर"
+  ],
+  [
+    "onion",
+    "प्याज",
+    "प्याज़"
+  ],
+  [
+    "banana",
+    "केला",
+    "केले"
+  ],
+  [
+    "apple",
+    "सेब",
+    "एप्पल"
+  ],
+  [
+    "capsicum",
+    "शिमला मिर्च",
+    "कैप्सिकम"
+  ],
+  [
+    "lettuce",
+    "सलाद पत्ता",
+    "लेट्यूस",
+    "लेट्युस"
+  ],
+  [
+    "broccoli",
+    "ब्रोकली",
+    "ब्रोकोली"
+  ],
+  [
+    "spinach",
+    "पालक"
+  ],
+  [
+    "biscuits",
+    "biscuit",
+    "बिस्कुट",
+    "बिस्किट"
+  ],
+  [
+    "cookies",
+    "cookie",
+    "कुकीज",
+    "कुकीज़",
+    "कुकी"
+  ],
+  [
+    "chocolate",
+    "choco",
+    "चॉकलेट",
+    "चाकलेट",
+    "चोको"
+  ],
+  [
+    "chips",
+    "चिप्स"
+  ],
+  [
+    "peanuts",
+    "peanut",
+    "मूंगफली"
+  ],
+  [
+    "noodles",
+    "नूडल्स",
+    "नूडल"
+  ],
+  [
+    "croissant",
+    "क्रोइसेंट",
+    "क्रोइसां",
+    "क्रोइसान"
+  ],
+  [
+    "pav",
+    "पाव"
+  ],
+  [
+    "buns",
+    "bun",
+    "बन",
+    "बन्स"
+  ],
+  [
+    "juice",
+    "जूस",
+    "रस"
+  ],
+  [
+    "orange",
+    "संतरा",
+    "संतरे",
+    "ऑरेंज"
+  ],
+  [
+    "cold drink",
+    "soft drink",
+    "कोल्ड ड्रिंक",
+    "ठंडा पेय",
+    "सॉफ्ट ड्रिंक"
+  ],
+  [
+    "water",
+    "पानी",
+    "जल"
+  ],
+  [
+    "mineral",
+    "मिनरल"
+  ],
+  [
+    "green",
+    "हरा",
+    "हरी",
+    "ग्रीन"
+  ],
+  [
+    "yellow",
+    "पीला",
+    "पीली",
+    "येलो"
+  ],
+  [
+    "red",
+    "लाल",
+    "रेड"
+  ],
+  [
+    "brown",
+    "ब्राउन",
+    "भूरी",
+    "भूरा"
+  ],
+  [
+    "fresh",
+    "ताजा",
+    "ताज़ा",
+    "फ्रेश"
+  ],
+  [
+    "instant",
+    "इंस्टेंट"
+  ],
+  [
+    "dish wash",
+    "dishwash",
+    "बर्तन धोने",
+    "बर्तन"
+  ],
+  [
+    "gel",
+    "जेल"
+  ],
+  [
+    "floor",
+    "फर्श",
+    "फ्लोर"
+  ],
+  [
+    "cleaner",
+    "क्लीनर",
+    "सफाई"
+  ],
+  [
+    "toilet",
+    "टॉयलेट",
+    "शौचालय"
+  ],
+  [
+    "soap",
+    "sabun",
+    "साबुन"
+  ],
+  [
+    "handwash",
+    "hand wash",
+    "हैंडवॉश",
+    "हैंडवाश",
+    "हाथ धोने"
+  ],
+  [
+    "amul",
+    "अमूल",
+    "अमुल"
+  ],
+  [
+    "lux",
+    "लक्स"
+  ],
+  [
+    "assam",
+    "असम",
+    "आसाम"
+  ],
+  [
+    "toned",
+    "टोंड"
+  ],
+  [
+    "farm",
+    "फार्म"
+  ],
+  [
+    "cup",
+    "कप"
+  ],
+  [
+    "shimla",
+    "शिमला"
+  ],
+  [
+    "robusta",
+    "रोबस्टा"
+  ],
+  [
+    "royal",
+    "रॉयल"
+  ],
+  [
+    "gala",
+    "गाला"
+  ],
+  [
+    "premium",
+    "प्रीमियम"
+  ],
+  [
+    "gentle",
+    "जेंटल"
+  ],
+  [
+    "vendor",
+    "वेंडर"
+  ],
+  [
+    "test",
+    "टेस्ट"
+  ]
+];
+
+function clean(value: string) {
+  return value.normalize("NFKC").toLowerCase().replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/[.,!?।]/g, " ").replace(/\s+/g, " ").trim();
+}
+const terms = concepts.flatMap((group, index) => group.map(term => ({ term: clean(term), concept: `concept${index}` }))).sort((a, b) => b.term.length - a.term.length);
+function searchable(value: string) {
+  let result = ` ${clean(value)} `;
+  for (const { term, concept } of terms) result = result.replaceAll(` ${term} `, ` ${concept} `);
+  return result.trim();
+}
 
 export function speechLanguage(lang: "en" | "hi") {
   return lang === "hi" ? "hi-IN" : "en-IN";
 }
 
 export function matchesProductSearch(name: string, query: string) {
-  const clean = (value: string) => value.normalize("NFKC").toLocaleLowerCase().replace(/[.,!?।]/g, "").trim();
-  const words = clean(query).split(/\s+/).filter(Boolean).map(word => aliases[word] ?? word);
-  const product = clean(name);
-  return words.every(word => product.includes(word));
+  const product = searchable(name).split(/\s+/);
+  const raw = clean(name);
+  return searchable(query).split(/\s+/).filter(Boolean).every(word =>
+    /^concept\d+$/.test(word) ? product.includes(word) : raw.includes(word),
+  );
 }
