@@ -8,6 +8,7 @@ import {
   TicketPercent,
   Menu,
   Bell,
+  Headphones,
   Settings,
   Bike,
   Users,
@@ -23,6 +24,7 @@ export type AdminNavTab =
   | "products"
   | "coupons"
   | "notifications"
+  | "support"
   | "settings"
   | "riders"
   | "vendors"
@@ -39,6 +41,7 @@ const MAIN: { id: AdminNavTab; label: string; icon: typeof LayoutDashboard }[] =
 const MORE: { id: AdminNavTab; label: string; icon: typeof Bell }[] = [
   { id: "home", label: "Home screen", icon: PanelsTopLeft },
   { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "support", label: "Customer support", icon: Headphones },
   { id: "riders", label: "Delivery KYC", icon: Bike },
   { id: "vendors", label: "Vendors & payouts", icon: Store },
   { id: "users", label: "Users", icon: Users },

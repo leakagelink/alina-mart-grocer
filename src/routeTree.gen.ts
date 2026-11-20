@@ -17,6 +17,7 @@ import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as KycRouteImport } from './routes/kyc'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as VendorKycRouteImport } from './routes/vendor-kyc'
 import { Route as OrdersIndexRouteImport } from './routes/orders.index'
@@ -63,6 +64,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VendorRoute = VendorRouteImport.update({
   id: '/vendor',
   path: '/vendor',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/kyc': typeof KycRoute
   '/notifications': typeof NotificationsRoute
   '/signup': typeof SignupRoute
+  '/support': typeof SupportRoute
   '/vendor': typeof VendorRoute
   '/vendor-kyc': typeof VendorKycRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/kyc': typeof KycRoute
   '/notifications': typeof NotificationsRoute
   '/signup': typeof SignupRoute
+  '/support': typeof SupportRoute
   '/vendor': typeof VendorRoute
   '/vendor-kyc': typeof VendorKycRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/kyc': typeof KycRoute
   '/notifications': typeof NotificationsRoute
   '/signup': typeof SignupRoute
+  '/support': typeof SupportRoute
   '/vendor': typeof VendorRoute
   '/vendor-kyc': typeof VendorKycRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/notifications'
     | '/signup'
+    | '/support'
     | '/vendor'
     | '/vendor-kyc'
     | '/orders/$id'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/notifications'
     | '/signup'
+    | '/support'
     | '/vendor'
     | '/vendor-kyc'
     | '/orders/$id'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/notifications'
     | '/signup'
+    | '/support'
     | '/vendor'
     | '/vendor-kyc'
     | '/orders/$id'
@@ -192,6 +204,7 @@ export interface RootRouteChildren {
   KycRoute: typeof KycRoute
   NotificationsRoute: typeof NotificationsRoute
   SignupRoute: typeof SignupRoute
+  SupportRoute: typeof SupportRoute
   VendorRoute: typeof VendorRoute
   VendorKycRoute: typeof VendorKycRoute
   OrdersIdRoute: typeof OrdersIdRoute
@@ -257,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/vendor': {
       id: '/vendor'
       path: '/vendor'
@@ -304,6 +324,7 @@ const rootRouteChildren: RootRouteChildren = {
   KycRoute: KycRoute,
   NotificationsRoute: NotificationsRoute,
   SignupRoute: SignupRoute,
+  SupportRoute: SupportRoute,
   VendorRoute: VendorRoute,
   VendorKycRoute: VendorKycRoute,
   OrdersIdRoute: OrdersIdRoute,

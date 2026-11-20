@@ -13,6 +13,7 @@ import { AppSettingsAdmin } from "@/components/AppSettingsAdmin";
 import { HomeContentAdmin } from "@/components/HomeContentAdmin";
 import { homeContent } from "@/lib/home-content";
 import { NotificationsAdmin } from "@/components/NotificationsAdmin";
+import { SupportInbox } from "@/components/SupportInbox";
 import { BottomNav } from "@/components/BottomNav";
 import { AdminNav } from "@/components/AdminNav";
 import { ProductImage } from "@/components/ProductImage";
@@ -56,6 +57,7 @@ const TABS = [
   "products",
   "coupons",
   "notifications",
+  "support",
   "settings",
   "riders",
   "vendors",
@@ -70,6 +72,7 @@ const TAB_LABELS: Record<AdminTab, string> = {
   products: "Products",
   coupons: "Coupons",
   notifications: "Notifications",
+  support: "Customer support",
   settings: "App settings",
   riders: "Delivery KYC",
   vendors: "Vendors",
@@ -244,6 +247,8 @@ function Admin() {
           <CouponsAdmin />
         ) : tab === "notifications" ? (
           <NotificationsAdmin />
+        ) : tab === "support" ? (
+          <div className="mt-5"><SupportInbox admin /></div>
         ) : tab === "settings" ? (
           <AppSettingsAdmin />
         ) : tab === "home" ? (
