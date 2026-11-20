@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
 import { STATUS_LABEL, hydrate, inr, useStore, type OrderStatus } from "@/lib/store";
 import { ProductImage } from "@/components/ProductImage";
+import { riderCallHref } from "@/lib/order-contact";
 
 export const Route = createFileRoute("/orders/$id")({
   head: () => ({
@@ -52,6 +53,7 @@ function TrackOrder() {
   }
 
   const activeIndex = STEPS.findIndex((s) => s.key === order.status);
+  const callHref = riderCallHref(order.riderPhone);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -60,7 +62,7 @@ function TrackOrder() {
         <div className="animate-fade-up rounded-2xl brand-gradient p-4 text-primary-foreground">
           <p className="text-xs opacity-90">Order #{order.id}</p>
           <p className="mt-1 text-lg font-extrabold">
-            {order.status === "delivered" ? "Delivered 🎉" : "Arriving in 15 minutes"}
+            {order.status === "delivered" ? "Delivered 🎉" : order.status === "cancelled" ? "Order cancelled" : `Arriving in ${state.settings.deliveryMinutes} minutes`}
           </p>
           <p className="mt-1 text-xs opacity-90">{STATUS_LABEL[order.status]}</p>
         </div>
@@ -99,12 +101,12 @@ function TrackOrder() {
             <p className="text-sm font-bold">{order.rider}</p>
             <p className="text-xs text-muted-foreground">Your delivery partner</p>
           </div>
-          <a
-            href="tel:+919000000000"
+          {callHref && <a
+            href={callHref}
             className="ml-auto flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"
           >
             <PhoneCall className="h-4 w-4" /> Call
-          </a>
+          </a>}
         </div>
 
         <div className="mt-4 rounded-2xl border bg-card p-4">

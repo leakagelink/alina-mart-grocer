@@ -32,6 +32,7 @@ export type Order = {
   customer: { name: string; phone: string; address: string };
   rider: string;
   riderId?: string;
+  riderPhone?: string;
   customerId?: string;
   note?: string;
   photo?: string;
@@ -375,9 +376,9 @@ export function setOrderStatus(id: string, status: OrderStatus) {
   patchOrder(id, (o) => ({ ...o, status, paid: status === "delivered" ? true : o.paid }));
 }
 
-export function assignRider(id: string, rider: string) {
+export function assignRider(id: string, rider: string, riderPhone?: string) {
   uid().then((riderId) =>
-    patchOrder(id, (o) => ({ ...o, rider, ...(riderId ? { riderId } : {}), status: "out_for_delivery" as OrderStatus })),
+    patchOrder(id, (o) => ({ ...o, rider, ...(riderId ? { riderId } : {}), ...(riderPhone ? { riderPhone } : {}), status: "out_for_delivery" as OrderStatus })),
   );
 }
 

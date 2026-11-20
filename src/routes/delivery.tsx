@@ -193,7 +193,7 @@ function Panel({ rider, onLogout }: { rider: Rider; onLogout: () => void }) {
   }, []);
 
   const pickup = (o: Order) => {
-    assignRider(o.id, rider.name);
+    assignRider(o.id, rider.name, rider.phone);
     toast.success(`#${o.id} — Picked up`);
   };
 
