@@ -13,3 +13,5 @@
 - Admin role auto-assigned to phone 9301499921 by `handle_new_user` trigger; roles in `user_roles`. Why: no client-side role escalation.
 - Vendor data lives in `vendors`, `order_vendors` and `vendor_ledger`; vendor product writes are scoped to the caller's own approved vendor row, and payout requests are raised by the vendor but only settled by an admin. Why: vendors must never touch another shop's catalogue, orders or money.
 - Store homepage merchandising in the existing app_settings JSON and edit it through the existing admin RLS; use shared home-content helpers for category and section rendering. Why: content stays durable without a second catalogue or permission model.
+
+- Keep grocery cards and shared navigation on the compact semantic surface system in global CSS; motion must respect reduced-motion and avoid transforming fixed-control ancestors. Why: consistent shopping and panel UI without disrupting mobile controls.

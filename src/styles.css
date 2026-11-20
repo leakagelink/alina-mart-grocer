@@ -56,11 +56,11 @@
 }
 
 :root {
-  --radius: 1.1rem;
+  --radius: 0.5rem;
   --shadow-soft: 0 1px 2px oklch(0.25 0.05 150 / 4%), 0 8px 24px -8px oklch(0.25 0.05 150 / 12%);
   --shadow-lift: 0 16px 36px -12px oklch(0.42 0.13 152 / 28%);
-  --background: oklch(0.975 0.012 135);
-  --foreground: oklch(0.25 0.05 150);
+  --background: oklch(0.985 0.002 140);
+  --foreground: oklch(0.23 0.012 150);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.25 0.05 150);
   --popover: oklch(1 0 0);
@@ -136,20 +136,18 @@
 
   body {
     background-color: var(--color-background);
-    background-image: radial-gradient(60rem 30rem at 100% -10%, color-mix(in oklab, var(--leaf) 12%, transparent), transparent 60%),
-      radial-gradient(40rem 24rem at -10% 10%, color-mix(in oklab, var(--secondary) 8%, transparent), transparent 60%);
-    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3 { letter-spacing: 0; }
-  /* Modern soft cards everywhere: replace flat borders with elevation */
+  /* Compact grocery surfaces shared by customer and operational panels. */
   .bg-card.border, .bg-card.rounded-2xl, .bg-card.rounded-xl {
-    border-color: color-mix(in oklab, var(--border) 60%, transparent);
-    box-shadow: var(--shadow-soft);
+    border-color: var(--border);
+    box-shadow: none;
+    border-radius: var(--radius);
   }
-  input, select, textarea { border-radius: 0.8rem; transition: box-shadow .2s, border-color .2s; }
+  input, select, textarea { border-radius: var(--radius); transition: box-shadow .2s, border-color .2s; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 15%, transparent); }
 }
 
@@ -157,13 +155,27 @@
   background-image: linear-gradient(135deg, var(--color-primary), var(--color-leaf));
 }
 
-.martigo-home { --home-header: oklch(0.96 0.07 132); --home-tile: oklch(0.96 0.025 185); --home-copy: oklch(0.22 0.035 150); }
+.martigo-home { --home-header: oklch(0.97 0.075 110); --home-tile: oklch(0.96 0.025 185); --home-copy: oklch(0.22 0.035 150); --home-tile-warm: oklch(0.97 0.025 80); --home-tile-rose: oklch(0.97 0.018 15); }
 .dark .martigo-home { --home-header: var(--accent); --home-tile: var(--muted); }
 .home-header { background: var(--home-header); }
 .home-category-image, .home-frequent { background: var(--home-tile); }
 .home-banner-copy { color: var(--home-copy); }
 .martigo-home .bg-card.border { box-shadow: none; border-color: var(--border); }
 .martigo-home input:focus { box-shadow: none; }
+.home-category:nth-child(3n + 2) .home-category-image { background: var(--home-tile-warm); }
+.home-category:nth-child(3n) .home-category-image { background: var(--home-tile-rose); }
+.dark .martigo-home { --home-tile-warm: var(--muted); --home-tile-rose: var(--accent); }
+.home-section { scroll-margin-top: 16rem; }
+.home-category-image img { mix-blend-mode: multiply; }
+.dark .home-category-image img { mix-blend-mode: normal; }
+.home-category:hover .home-category-image img { transform: scale(1.08) translateY(-2px); }
+.home-category:hover .home-category-image { box-shadow: var(--shadow-soft); }
+.grocery-product { transition: border-color .2s, box-shadow .2s; }
+@media (hover: hover) { .grocery-product:hover { border-color: var(--primary); box-shadow: var(--shadow-soft); } .grocery-product:hover img { transform: scale(1.06); } }
+.home-strip { scroll-snap-type: x mandatory; scroll-behavior: smooth; }
+.home-strip > * { scroll-snap-align: start; }
+.cart-dock { animation: cart-arrive .3s ease-out both; }
+@keyframes cart-arrive { from { opacity: 0; margin-bottom: -12px; } to { opacity: 1; margin-bottom: 0; } }
 
 @utility hide-scrollbar {
   scrollbar-width: none;
@@ -281,7 +293,7 @@
     animation: shimmer 2.8s ease-in-out infinite; pointer-events: none; }
 }
 @layer base {
-  main { animation: page-in .45s cubic-bezier(.2,.8,.2,1) both; }
+  main { animation: surface-in .3s ease-out both; }
   button, a { transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease; }
   button:active:not(:disabled), a:active { transform: scale(.96); }
   img { transition: transform .3s ease; }
@@ -303,9 +315,10 @@
 /* ===== Responsive scaling for all devices ===== */
 html { -webkit-text-size-adjust: 100%; }
 body { overflow-x: hidden; min-height: 100dvh; }
-@media (max-width: 380px) { html { font-size: 14.5px; } }
-@media (max-width: 330px) { html { font-size: 13px; } }
-@media (min-width: 1536px) { html { font-size: 17px; } }
+@keyframes surface-in { from { opacity: 0; } to { opacity: 1; } }
+main > section { min-width: 0; }
+main h2, main h3 { overflow-wrap: anywhere; }
+main .rounded-3xl.bg-card { border-radius: var(--radius); border: 1px solid var(--border); }
 img, video, canvas, iframe { max-width: 100%; }
 table { display: block; overflow-x: auto; max-width: 100%; }
 

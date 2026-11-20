@@ -26,16 +26,17 @@ export function BottomNav() {
     : items;
 
   return (
-    <nav className="sticky bottom-0 z-30 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-1">
-      <div className="glass mx-auto flex max-w-md rounded-3xl border p-1.5 shadow-lift">
+    <nav aria-label="Main navigation" className="fixed inset-x-0 bottom-0 z-30 border-t bg-card pb-[env(safe-area-inset-bottom)]">
+      <div className="mx-auto flex max-w-lg px-3">
         {navItems.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? path === "/" : path.startsWith(to);
           return (
             <Link
               key={to}
               to={to}
-              className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-2xl py-2 text-[11px] font-semibold transition-all ${
-                active ? "brand-gradient text-primary-foreground shadow-lift" : "text-muted-foreground"
+              aria-current={active ? "page" : undefined}
+              className={`relative flex h-16 flex-1 flex-col items-center justify-center gap-1 border-t-2 text-[11px] font-semibold transition-all ${
+                active ? "border-primary text-primary" : "border-transparent text-muted-foreground"
               }`}
             >
               <Icon className="h-5 w-5" />
