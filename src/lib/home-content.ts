@@ -27,6 +27,11 @@ export function homeContent(value?: HomeContent): HomeContent {
   return { categories: value?.categories ?? DEFAULT_HOME.categories, banners: value?.banners ?? DEFAULT_HOME.banners, sections: value?.sections ?? DEFAULT_HOME.sections };
 }
 
+export function validHomeImage(value: string): boolean {
+  if (/^\/__l5e\/assets-v1\/[a-zA-Z0-9/_\-.]+$/.test(value)) return true;
+  try { return new URL(value).protocol === "https:"; } catch { return false; }
+}
+
 export function sectionProducts(section: HomeSection, products: Product[]): Product[] {
   if (section.productIds.length) return section.productIds.flatMap(id => products.filter(p => p.id === id));
   return products.filter(p => !section.category || p.category === section.category).slice(0, 12);

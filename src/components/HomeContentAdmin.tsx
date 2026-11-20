@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Save, Trash2 } from "lucide-reac
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { homeContent, moveItem, type HomeContent } from "@/lib/home-content";
+import { homeContent, moveItem, validHomeImage, type HomeContent } from "@/lib/home-content";
 import { saveHomeContent, useStore } from "@/lib/store";
 
 export function HomeContentAdmin() {
@@ -30,7 +30,7 @@ export function HomeContentAdmin() {
       <Button disabled={saving || !dirty} onClick={async () => {
         const all = [...draft.banners, ...draft.categories, ...draft.sections];
         if (all.some(item => !("name" in item ? item.name : item.title).trim())) { toast.error("Har item ka naam ya title daalein"); return; }
-        if (draft.banners.some(b => !/^https:\/\//.test(b.image)) || draft.categories.some(c => c.image && !/^https:\/\//.test(c.image))) { toast.error("Photo ka valid HTTPS URL daalein"); return; }
+        if (draft.banners.some(b => !validHomeImage(b.image)) || draft.categories.some(c => c.image && !validHomeImage(c.image))) { toast.error("Photo ka valid HTTPS URL daalein"); return; }
         setSaving(true);
         try { await saveHomeContent(draft); setDirty(false); toast.success("Home screen save ho gayi"); } catch { toast.error("Save nahi hua, dobara koshish karein"); } finally { setSaving(false); }
       }}><Save />{saving ? "Saving…" : "Save home"}</Button></div>
