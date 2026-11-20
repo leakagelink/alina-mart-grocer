@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Save, Trash2 } from "lucide-reac
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { homeContent, moveItem, validHomeImage, type HomeContent } from "@/lib/home-content";
 import { saveHomeContent, useStore } from "@/lib/store";
 
@@ -43,7 +44,7 @@ export function HomeContentAdmin() {
         <Button size="icon" variant="ghost" title="Delete" onClick={() => { if (window.confirm("Ye home item delete karein?")) update({ ...draft, [tab]: draft[tab].filter((_, i) => i !== index) }); }}><Trash2 /></Button>
       </div></div>
       <div className="grid gap-3 sm:grid-cols-2">
-        {("name" in item ? ["id", "name", "nameHi", "group", "groupHi", "image"] : "subtitle" in item ? ["title", "titleHi", "subtitle", "subtitleHi", "image"] : ["title", "titleHi"]).map(key => <label key={key} className="text-xs font-semibold">{({ id: "Category ID", name: "Name (English)", nameHi: "नाम (हिन्दी)", group: "Group (English)", groupHi: "समूह (हिन्दी)", title: "Title (English)", titleHi: "शीर्षक (हिन्दी)", subtitle: "Subtitle (English)", subtitleHi: "विवरण (हिन्दी)", image: "Photo HTTPS URL" } as Record<string,string>)[key]}<Input className="mt-1" value={String((item as unknown as Record<string, unknown>)[key] ?? "")} onChange={e => patch(index, key, e.target.value)} /></label>)}
+        {("name" in item ? ["id", "name", "nameHi", "group", "groupHi", "image"] : "subtitle" in item ? ["title", "titleHi", "subtitle", "subtitleHi", "image"] : ["title", "titleHi"]).map(key => <label key={key} className="text-xs font-semibold">{({ id: "Category ID", name: "Name (English)", nameHi: "नाम (हिन्दी)", group: "Group (English)", groupHi: "समूह (हिन्दी)", title: "Title (English)", titleHi: "शीर्षक (हिन्दी)", subtitle: "Subtitle (English)", subtitleHi: "विवरण (हिन्दी)", image: "Photo HTTPS URL" } as Record<string,string>)[key]}{key.startsWith("title") ? <Textarea rows={2} className="mt-1" value={String((item as unknown as Record<string, unknown>)[key] ?? "")} onChange={e => patch(index, key, e.target.value)} /> : <Input className="mt-1" value={String((item as unknown as Record<string, unknown>)[key] ?? "")} onChange={e => patch(index, key, e.target.value)} />}</label>)}
         {"category" in item && <label className="text-xs font-semibold">Category<select className="mt-1 h-9 w-full border bg-background px-2" value={item.category} onChange={e => patch(index, "category", e.target.value)}><option value="">All products</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>}
         {"productId" in item && <label className="text-xs font-semibold">Category photo from product<select className="mt-1 h-9 w-full border bg-background px-2" value={item.productId} onChange={e => patch(index, "productId", e.target.value)}><option value="">None</option>{state.products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>}
       </div>
