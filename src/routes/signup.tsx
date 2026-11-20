@@ -1,4 +1,5 @@
 import { BackButton } from "@/components/BackButton";
+import { SocialLinksEditor } from "@/components/SocialLinksEditor";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bike, ChevronRight, Eye, EyeOff, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Store, Trash2, User, Languages } from "lucide-react";
@@ -310,6 +311,7 @@ function ProfileTab({ me, input }: { me: Account; input: string }) {
       <p className="mt-1 rounded-xl bg-muted px-3 py-2.5 text-sm capitalize text-muted-foreground">
         {roleLabel(me.role)}
       </p>
+      <SocialLinksEditor me={me} />
     </div>
   );
 }

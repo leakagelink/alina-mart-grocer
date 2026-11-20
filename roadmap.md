@@ -10,6 +10,7 @@
 - Vendor system: vendor signup, shop application (KYC-style), admin approve/reject, vendor's own products, vendor orders, earnings + payout request, admin marks payout paid
 
 ## Open
+- [ ] Customer social profile links: Facebook, Instagram, X and other; add, edit, remove and persistence checks.
 - [x] Customer support inbox: profile link, private requests, admin replies/resolve, activity alerts; request persistence and admin reply/read-back verified at desktop and 320px.
 - [x] In-app notification inbox and bell, persistent read controls, admin all-user/private messages, automatic account/order/KYC/payout updates; admin send, customer profile/language/order receipt and order link verified. Phone push deferred by user.
 - [x] Added two photo banners (three total) with automatic sliding and 12 photo test products plus pantry category/section; all slides verified at 320/393/1280px in light/dark, all new product images and rice-to-cart flow verified, six tests pass. Existing admin management retained.

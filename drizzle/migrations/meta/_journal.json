@@ -57,6 +57,13 @@
       "when": 1795161678830,
       "tag": "0007_customer_support_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795162077079,
+      "tag": "0008_profile_social_links",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { adminDeleteUser, adminResetPassword } from "@/lib/admin-users.functions";
+import { socialLinksSchema, type SocialLink } from "@/lib/social-links";
 
 export type Role = "customer" | "delivery" | "vendor" | "admin";
 export type KycStatus = "not_submitted" | "submitted" | "approved" | "rejected";
@@ -48,6 +49,7 @@ export type Account = {
   phone: string;
   createdAt: number;
   addresses?: Address[];
+  socialLinks?: SocialLink[];
   kycStatus?: KycStatus;
   kyc?: Kyc;
   rejectReason?: string | undefined;
@@ -103,6 +105,7 @@ async function loadAccounts(sessionId: string | null) {
       phone: p.phone,
       createdAt: new Date(p.created_at).getTime(),
       addresses: (p.addresses ?? []) as Address[],
+      socialLinks: socialLinksSchema.safeParse(p.social_links ?? []).data ?? [],
       kycStatus: (p.kyc_status ?? undefined) as KycStatus | undefined,
       kyc: (p.kyc ?? undefined) as Kyc | undefined,
       rejectReason: p.reject_reason ?? undefined,
@@ -214,6 +217,13 @@ export function rejectKyc(id: string, reason: string) {
 export function updateProfile(id: string, p: { name: string }) {
   if (p.name.trim().length < 2) throw new Error("Naam kam se kam 2 characters ka hona chahiye");
   return patch(id, { name: p.name.trim().slice(0, 60) });
+}
+
+export async function updateSocialLinks(id: string, links: SocialLink[]) {
+  const parsed = socialLinksSchema.parse(links);
+  const { error } = await supabase.from("profiles").update({ social_links: parsed }).eq("id", id).select("id").single();
+  if (error) throw new Error(error.message);
+  await loadAccounts(state.sessionId);
 }
 
 export async function changePassword(id: string, oldPw: string, newPw: string) {
