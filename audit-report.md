@@ -9,6 +9,7 @@
 - All 12 admin tabs opened without page errors. Approved vendor and rider panels opened; customer could not enter admin/delivery controls. KYC approval/rejection mutation and new signup were not rerun in this audit.
 - Vendor test products were removed and disappearance confirmed after refresh. Audit orders/support history remain labelled audit-only; undelivered audit orders were cancelled, while the delivered audit record remains for traceability.
 - Customer screens at 320, 393 and 1280 pixels had no horizontal page overflow; signed-in admin/vendor home views also passed at 320 pixels.
+- Follow-up verification opened all 39 current product detail pages, customer pages and every admin/vendor/delivery tab at 393 and 1280 pixels in both light and dark themes: 276 checks passed with no uncaught page errors, blank pages, broken loaded images or horizontal page overflow. Mobile admin tabs were reached through the actual More menu. Representative screenshots were visually inspected.
 - Home images loaded without broken images in the initial check. All content routes have app-specific head metadata.
 - Local offline startup message was rendered with browser networking disabled.
 - 58 unit tests passed across 7 test files. Final tested browser runs had no uncaught page errors; latest preview build reports OK.

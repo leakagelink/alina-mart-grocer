@@ -11,6 +11,7 @@
 
 ## Open
 - [x] Browser audit: four role logins, vendor product→customer COD→admin pack→rider delivery→customer read-back, support and private notifications, 58 tests, tracking call/cancel fixes; audit-report.md records coverage and limits.
+- [x] Follow-up visual audit: all 39 product detail pages and customer/panel tabs at phone/desktop in both themes; 276 checks passed, no page errors or horizontal overflow.
 - [ ] Android permission/install audit — blocked by missing generated Android project, APK and device; PowerShell manifest helper provided, actual Allow/Deny, voice, camera, hardware Back and post-load offline recovery remain unverified.
 - [x] Hindi product search: 38 current catalogue names verified at phone/desktop in both themes, mixed-language and invisible-character tests pass; category-to-paneer search and product detail verified.
 - [x] Customer social profile links: Facebook, Instagram, X and other; all added/read back after refresh, edited and removed; phone/desktop light/dark checked.
