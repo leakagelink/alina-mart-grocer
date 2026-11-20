@@ -15,3 +15,4 @@
 - Store homepage merchandising in the existing app_settings JSON and edit it through the existing admin RLS; use shared home-content helpers for category and section rendering. Why: content stays durable without a second catalogue or permission model.
 
 - Keep grocery cards and shared navigation on the compact semantic surface system in global CSS; motion must respect reduced-motion and avoid transforming fixed-control ancestors. Why: consistent shopping and panel UI without disrupting mobile controls.
+- Use the shared Embla offer carousel for admin-managed banners; pause rotation during interaction, hidden tabs and reduced motion. Why: touch navigation stays accessible without competing timers.

@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ProductCard";
 import { useLang } from "@/lib/i18n";
 import { ProductImage } from "@/components/ProductImage";
+import { useEffect } from "react";
 import { homeContent } from "@/lib/home-content";
 import {
   addToCart,
@@ -12,6 +13,7 @@ import {
   inr,
   removeOne,
   useStore,
+  hydrate,
 } from "@/lib/store";
 
 export const Route = createFileRoute("/product/$id")({
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/product/$id")({
 function ProductDetail() {
   const { id } = Route.useLoaderData();
   const state = useStore();
+  useEffect(() => { hydrate(); }, []);
   const { t } = useLang();
   const product = state.products.find((p) => p.id === id);
 
