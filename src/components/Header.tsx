@@ -8,6 +8,7 @@ import { useLang } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { BackButton } from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
+import { VoiceSearchButton } from "@/components/VoiceSearchButton";
 
 export function Header({ query, onQuery }: { query?: string; onQuery?: (v: string) => void }) {
   const state = useStore();
@@ -56,12 +57,14 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
       </div>
       {onQuery && (
         <div className="mx-auto max-w-5xl px-4 pb-3">
-          <input
+          <div className="relative flex items-center rounded-lg border bg-muted pr-1"><input
             value={query}
             onChange={(e) => onQuery(e.target.value)}
             placeholder={t("search")}
-            className="w-full rounded-lg border bg-muted px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            aria-label="Search products"
+            className="min-w-0 flex-1 rounded-lg bg-transparent px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
+          <VoiceSearchButton onResult={onQuery} /></div>
         </div>
       )}
     </header>
