@@ -43,6 +43,13 @@
       "when": 1795160916278,
       "tag": "0005_account_security_activity_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795161400600,
+      "tag": "0006_realtime_notification_read_receipts",
+      "breakpoints": true
     }
   ]
 }
