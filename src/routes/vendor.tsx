@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { ProductImage } from "@/components/ProductImage";
+import { homeContent } from "@/lib/home-content";
 import { BackButton } from "@/components/BackButton";
 import {
   CATEGORIES,
@@ -379,7 +380,7 @@ function ProductsTab({ vendorId }: { vendorId: string }) {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <select className={inp} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-            {CATEGORIES.map((c) => (
+            {homeContent(store.settings.home).categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>

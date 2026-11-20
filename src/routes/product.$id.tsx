@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ProductCard";
 import { useLang } from "@/lib/i18n";
 import { ProductImage } from "@/components/ProductImage";
+import { homeContent } from "@/lib/home-content";
 import {
   addToCart,
   CATEGORIES,
@@ -24,6 +25,8 @@ export const Route = createFileRoute("/product/$id")({
       { name: "description", content: "Product details, price and offers on Martigo." },
       { property: "og:title", content: "Product — Martigo" },
       { property: "og:description", content: "Product details, price and offers on Martigo." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ProductDetail,
@@ -60,7 +63,7 @@ function ProductDetail() {
   const qty = state.cart.find((c) => c.productId === product.id)?.qty ?? 0;
   const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
   const out = product.stock <= 0;
-  const category = CATEGORIES.find((c) => c.id === product.category);
+  const category = homeContent(state.settings.home).categories.find((c) => c.id === product.category);
   const similar = state.products
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 8);
