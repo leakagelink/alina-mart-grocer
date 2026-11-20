@@ -22,3 +22,4 @@
 - Keep support requests in an owner-scoped table with admin-only replies and trigger-generated activity alerts; share the inbox UI between customer and admin pages. Why: private requests stay durable and admins can respond without external contact credentials.
 - Store social profile URLs on the existing private profile with shared client validation and a database validation trigger; these are links, not OAuth connections. Why: users manage account links without granting provider access or storing credentials.
 - Persist the assigned rider phone in the existing order JSON and hide tracking calls when no valid contact exists. Why: customer tracking must never dial a placeholder number.
+- Configure generated Android permissions with the additive PowerShell helper rather than replacing the local manifest. Why: the native project is generated outside this repository and its existing declarations must survive.

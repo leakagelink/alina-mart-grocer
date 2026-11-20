@@ -10,7 +10,8 @@
 - Vendor system: vendor signup, shop application (KYC-style), admin approve/reject, vendor's own products, vendor orders, earnings + payout request, admin marks payout paid
 
 ## Open
-- [ ] Full app audit: signed-in customer/admin/vendor/delivery flows, runtime errors and Android permission/install limitations.
+- [x] Browser audit: four role logins, vendor product→customer COD→admin pack→rider delivery→customer read-back, support and private notifications, 58 tests, tracking call/cancel fixes; audit-report.md records coverage and limits.
+- [ ] Android permission/install audit — blocked by missing generated Android project, APK and device; PowerShell manifest helper provided, actual Allow/Deny, voice, camera, hardware Back and post-load offline recovery remain unverified.
 - [x] Hindi product search: 38 current catalogue names verified at phone/desktop in both themes, mixed-language and invisible-character tests pass; category-to-paneer search and product detail verified.
 - [x] Customer social profile links: Facebook, Instagram, X and other; all added/read back after refresh, edited and removed; phone/desktop light/dark checked.
 - [x] Customer support inbox: profile link, private requests, admin replies/resolve, activity alerts; request persistence and admin reply/read-back verified at desktop and 320px.
