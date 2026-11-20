@@ -30,7 +30,7 @@ export function Header({ query, onQuery }: { query?: string; onQuery?: (v: strin
             alt="Martigo"
             className="h-9 w-9 shrink-0 sm:h-10 sm:w-10"
           />
-          <span className="truncate text-base font-extrabold leading-none sm:text-lg">
+          <span className="hidden truncate text-base font-extrabold leading-none min-[380px]:inline sm:text-lg">
             Marti<span className="text-secondary">go</span>
           </span>
         </Link>

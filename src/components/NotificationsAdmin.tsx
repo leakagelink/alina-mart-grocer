@@ -121,18 +121,21 @@ export function NotificationsAdmin() {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button
+            variant="outline"
             onClick={exportOrders}
             className="rounded-xl border bg-background px-4 py-2 text-sm font-bold"
           >
             Orders CSV
           </Button>
           <Button
+            variant="outline"
             onClick={exportProducts}
             className="rounded-xl border bg-background px-4 py-2 text-sm font-bold"
           >
             Products CSV
           </Button>
           <Button
+            variant="outline"
             onClick={exportCoupons}
             className="rounded-xl border bg-background px-4 py-2 text-sm font-bold"
           >
@@ -143,7 +146,7 @@ export function NotificationsAdmin() {
 
       <div className="space-y-2">
         <p className="text-sm font-bold">Bheji gayi notifications</p>
-        {state.notifications.length === 0 && (
+        {state.notifications.filter(n => n.kind !== "activity").length === 0 && (
           <p className="py-6 text-center text-sm text-muted-foreground">Abhi koi notification nahi bheja.</p>
         )}
         {state.notifications.filter(n => n.kind !== "activity").map((n) => (
@@ -159,12 +162,15 @@ export function NotificationsAdmin() {
               </p>
             </div>
             <Button
+              variant="ghost"
+              size="icon"
               onClick={async () => {
                 try { await deleteNotification(n.id); toast.success("Notification hata di"); }
                 catch { toast.error("Notification nahi hati. Dobara try karein."); }
               }}
               className="shrink-0 text-muted-foreground hover:text-destructive"
               aria-label="Delete notification"
+              title="Delete notification"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
