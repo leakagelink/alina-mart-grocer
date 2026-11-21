@@ -10,6 +10,7 @@
 - Vendor system: vendor signup, shop application (KYC-style), admin approve/reject, vendor's own products, vendor orders, earnings + payout request, admin marks payout paid
 
 ## Open
+- [x] Blinkit-reference account UI: identity header, orders/support/notification shortcuts, grouped information/security rows and separate existing editors; signed-in 320/393/768/1280px light/dark, profile/address save, language switching and password visibility verified; five social-link tests pass. Native APK not tested.
 - [x] Browser audit: four role logins, vendor product→customer COD→admin pack→rider delivery→customer read-back, support and private notifications, 58 tests, tracking call/cancel fixes; audit-report.md records coverage and limits.
 - [x] Follow-up visual audit: all 39 product detail pages and customer/panel tabs at phone/desktop in both themes; 276 checks passed, no page errors or horizontal overflow.
 - [ ] Android permission/install audit — blocked by missing generated Android project, APK and device; PowerShell manifest helper provided, actual Allow/Deny, voice, camera, hardware Back and post-load offline recovery remain unverified.

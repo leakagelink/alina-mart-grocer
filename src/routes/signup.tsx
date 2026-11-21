@@ -1,8 +1,9 @@
 import { BackButton } from "@/components/BackButton";
+import { Button } from "@/components/ui/button";
 import { SocialLinksEditor } from "@/components/SocialLinksEditor";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bike, ChevronRight, Eye, EyeOff, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Store, Trash2, User, Languages } from "lucide-react";
+import { ArrowLeft, Bell, Bike, ChevronRight, Headphones, Link2, Eye, EyeOff, Home, KeyRound, LogOut, MapPin, Pencil, Plus, ShoppingBag, Star, Store, Trash2, User, Languages } from "lucide-react";
 import { toast } from "sonner";
 import { useLang } from "@/lib/i18n";
 import logo from "@/assets/martigo-logo-full.png.asset.json";
@@ -11,9 +12,9 @@ import { changePassword, currentAccount, deleteAddress, hydrateAccounts, logIn, 
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Sign up / Login — Martigo" },
-      { name: "description", content: "Create your Martigo account as a customer or delivery partner." },
-      { property: "og:title", content: "Join Martigo" },
+      { title: "Your account, Login & Sign up — Martigo" },
+      { name: "description", content: "Manage your Martigo profile, delivery addresses, language and account settings." },
+      { property: "og:title", content: "Your Martigo account" },
       { property: "og:description", content: "Customer ya delivery partner ke roop mein account banaiye." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -27,9 +28,9 @@ function PasswordInput({ value, onChange, className, placeholder, maxLength = 40
   return (
     <div className="relative">
       <input value={value} onChange={(e) => onChange(e.target.value)} type={show ? "text" : "password"} maxLength={maxLength} className={`${className} pr-11`} placeholder={placeholder} />
-      <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? "Password chhupaiye" : "Password dikhayiye"} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground active:scale-90">
+      <Button variant="ghost" size="icon" type="button" onClick={() => setShow((s) => !s)} aria-label={show ? "Password chhupaiye" : "Password dikhayiye"} className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground">
         {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -178,97 +179,82 @@ function SignupPage() {
 
 // ================= PROFILE VIEW =================
 
-type Tab = "profile" | "addresses" | "password" | "language";
+type Tab = "profile" | "addresses" | "password" | "language" | "social";
 
 function ProfileView({ me }: { me: Account }) {
-  const [tab, setTab] = useState<Tab>("profile");
+  const [tab, setTab] = useState<Tab | null>(null);
+  const nav = useNavigate();
   const { lang } = useLang();
-  const input = "mt-1 w-full rounded-xl border bg-background px-3 py-2.5 text-sm";
+  const text = (en: string, hi: string) => lang === "hi" ? hi : en;
+  const input = "mt-1 w-full rounded-lg border bg-background px-3 py-3 text-sm";
+  const titles: Record<Tab, string> = {
+    profile: text("Profile details", "प्रोफाइल की जानकारी"),
+    addresses: text("Address book", "सेव किए गए पते"),
+    password: text("Account security", "अकाउंट सुरक्षा"),
+    language: text("Language", "भाषा"),
+    social: text("Social accounts", "सोशल अकाउंट"),
+  };
+  const panel = me.role === "admin" ? { to: "/admin", label: "Admin Panel", Icon: Store }
+    : me.role === "delivery" ? { to: me.kycStatus === "approved" ? "/delivery" : "/kyc", label: text("Delivery partner", "डिलीवरी पार्टनर"), Icon: Bike }
+    : me.role === "vendor" ? { to: me.vendorStatus === "approved" ? "/vendor" : "/vendor-kyc", label: text("Your shop", "आपकी दुकान"), Icon: Store } : null;
 
   return (
-    <div className="min-h-screen brand-gradient px-3 pb-10 pt-16 sm:p-4 sm:pt-16">
-      <BackButton floating />
-      <div className="animate-fade-up mx-auto w-full max-w-md">
-        {/* Header card */}
-        <div className="rounded-3xl bg-card p-5 text-center shadow-2xl">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary/10">
-            <User className="h-8 w-8 text-primary" />
+    <div className="account-page min-h-dvh pb-10">
+      <header className="account-topbar sticky top-0 z-30 border-b border-border/50">
+        <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
+          <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-full bg-card shadow-none" aria-label={text("Back", "वापस")} onClick={() => tab ? setTab(null) : nav({ to: "/" })}><ArrowLeft /></Button>
+          <h1 className="min-w-0 text-base font-extrabold">{tab ? titles[tab] : text("Profile", "प्रोफाइल")}</h1>
+        </div>
+      </header>
+      {!tab ? <>
+        <section className="account-identity px-4 pb-7 pt-6 text-center">
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-card"><User className="h-10 w-10 text-foreground" strokeWidth={2.5} /></div>
+          <h2 className="mt-3 text-2xl font-extrabold">{text("Your account", "आपका अकाउंट")}</h2>
+          <p className="mt-1 break-words text-sm font-semibold">{me.name}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{me.phone}</p>
+        </section>
+        <main className="mx-auto max-w-2xl space-y-5 px-3 sm:px-5">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            {[
+              { to: "/orders", label: text("Your orders", "आपके ऑर्डर"), Icon: ShoppingBag },
+              { to: "/support", label: text("Need help?", "मदद चाहिए?"), Icon: Headphones },
+              { to: "/notifications", label: text("Notifications", "नोटिफिकेशन"), Icon: Bell },
+            ].map(({ to, label, Icon }) => <Button key={to} asChild variant="ghost" className="account-shortcut h-auto min-h-24 min-w-0 flex-col gap-2 rounded-lg bg-card px-1 py-4 text-center sm:min-h-28"><Link to={to}><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent"><Icon className="size-6 text-primary" /></span><span className="w-full whitespace-normal text-xs font-bold leading-5 sm:text-sm">{label}</span></Link></Button>)}
           </div>
-          <h1 className="mt-2 text-xl font-extrabold">{me.name}</h1>
-          <p className="text-sm text-muted-foreground">{me.phone}</p>
-          <p className="mt-1 inline-block rounded-full bg-muted px-3 py-1 text-xs font-bold capitalize">
-            {roleLabel(me.role)}
-          </p>
-        </div>
-
-        {/* Quick links */}
-        <div className="mt-3 space-y-2 rounded-3xl bg-card p-4 shadow-xl">
-          {me.role === "admin" && (
-            <QuickLink to="/admin" label="Admin Panel" />
-          )}
-          {me.role === "delivery" && (
-            <QuickLink to={me.kycStatus === "approved" ? "/delivery" : "/kyc"} label={me.kycStatus === "approved" ? "Delivery Panel" : "KYC Status"} />
-          )}
-          {me.role === "vendor" && (
-            <QuickLink to={me.vendorStatus === "approved" ? "/vendor" : "/vendor-kyc"} label={me.vendorStatus === "approved" ? "Vendor Panel" : "Vendor Application"} />
-          )}
-          {me.role === "customer" && (
-            <QuickLink to="/orders" label="Mere Orders" />
-          )}
-          <QuickLink to="/notifications" label={lang === "hi" ? "नोटिफिकेशन" : "Notifications"} />
-          <QuickLink to="/support" label={lang === "hi" ? "कस्टमर सपोर्ट" : "Customer support"} />
-          <QuickLink to="/" label="Home par wapas" />
-        </div>
-
-        {/* Tabs */}
-        <div className="mt-3 grid grid-cols-4 gap-1 rounded-2xl bg-card p-1 text-xs font-bold shadow-xl">
-          {([
-            { t: "profile", label: "Profile", I: User },
-            { t: "addresses", label: "Addresses", I: MapPin },
-            { t: "password", label: "Password", I: KeyRound },
-            { t: "language", label: lang === "hi" ? "भाषा" : "Language", I: Languages },
-          ] as const).map(({ t, label, I }) => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`flex min-w-0 items-center justify-center gap-1 truncate rounded-xl px-1 py-2.5 ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-              <I className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-3 rounded-3xl bg-card p-5 shadow-xl">
+          <section className="account-group" aria-labelledby="account-info-title">
+            <h2 id="account-info-title" className="px-4 pb-2 pt-4 text-base font-extrabold">{text("Your information", "आपकी जानकारी")}</h2>
+            <AccountRow icon={User} label={titles.profile} onClick={() => setTab("profile")} />
+            <AccountRow icon={MapPin} label={titles.addresses} value={me.addresses?.length ? String(me.addresses.length) : undefined} onClick={() => setTab("addresses")} />
+            <AccountRow icon={Link2} label={titles.social} onClick={() => setTab("social")} />
+          </section>
+          <section className="account-group" aria-labelledby="account-settings-title">
+            <h2 id="account-settings-title" className="px-4 pb-2 pt-4 text-base font-extrabold">{text("Preferences & security", "पसंद और सुरक्षा")}</h2>
+            <AccountRow icon={Languages} label={titles.language} value={lang === "hi" ? "हिन्दी" : "ENGLISH"} onClick={() => setTab("language")} />
+            <AccountRow icon={KeyRound} label={text("Change password", "पासवर्ड बदलें")} onClick={() => setTab("password")} />
+          </section>
+          {panel && <section className="account-group"><Button asChild variant="ghost" className="account-row"><Link to={panel.to}><panel.Icon className="size-5 text-muted-foreground" /><span className="min-w-0 flex-1 whitespace-normal text-left">{panel.label}</span><ChevronRight className="text-muted-foreground" /></Link></Button></section>}
+          <section className="account-group"><Button variant="ghost" className="account-row" onClick={async () => { await logOut(); toast.success(text("Logged out", "लॉग आउट हो गया")); }}><LogOut className="size-5 text-muted-foreground" /><span className="flex-1 text-left">{text("Log out", "लॉग आउट")}</span><ChevronRight className="text-muted-foreground" /></Button></section>
+          <footer className="pb-6 pt-6 text-center"><img src={logo.url} alt="Martigo" className="mx-auto h-9 w-auto opacity-40 grayscale" /></footer>
+        </main>
+      </> : <main className="mx-auto max-w-2xl px-4 py-6 sm:px-5">
+        <div className="account-editor bg-card p-5 sm:p-6">
           {tab === "profile" && <ProfileTab me={me} input={input} />}
           {tab === "addresses" && <AddressesTab me={me} input={input} />}
           {tab === "password" && <PasswordTab me={me} input={input} />}
-          {tab === "language" && <LanguagePicker onDone={() => toast.success(lang === "hi" ? "भाषा बदल दी गई" : "Language updated")} />}
+          {tab === "language" && <LanguagePicker onDone={() => toast.success(text("Language updated", "भाषा बदल दी गई"))} />}
+          {tab === "social" && <SocialLinksEditor me={me} />}
         </div>
-
-        <button
-          onClick={async () => { await logOut(); toast.success("Logout ho gaya"); }}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-card py-3 text-sm font-extrabold text-destructive shadow-xl active:scale-95"
-        >
-          <LogOut className="h-4 w-4" /> Logout
-        </button>
-      </div>
+      </main>}
     </div>
   );
 }
 
-function roleLabel(role: Role) {
-  return role === "delivery"
-    ? "Delivery Partner"
-    : role === "vendor"
-      ? "Vendor"
-      : role === "admin"
-        ? "Admin"
-        : "Customer";
+function AccountRow({ icon: Icon, label, value, onClick }: { icon: typeof User; label: string; value?: string | undefined; onClick: () => void }) {
+  return <Button variant="ghost" className="account-row" onClick={onClick}><Icon className="size-5 text-muted-foreground" /><span className="min-w-0 flex-1 whitespace-normal text-left">{label}</span>{value && <span className="shrink-0 text-xs font-semibold text-muted-foreground">{value}</span>}<ChevronRight className="text-muted-foreground" /></Button>;
 }
 
-function QuickLink({ to, label }: { to: string; label: string }) {
-  return (
-    <Link to={to} className="flex items-center justify-between rounded-xl bg-muted px-4 py-3 text-sm font-bold active:scale-95">
-      {label} <ChevronRight className="h-4 w-4 text-muted-foreground" />
-    </Link>
-  );
+function roleLabel(role: Role) {
+  return role === "delivery" ? "Delivery Partner" : role === "vendor" ? "Vendor" : role === "admin" ? "Admin" : "Customer";
 }
 
 function ProfileTab({ me, input }: { me: Account; input: string }) {
@@ -288,9 +274,9 @@ function ProfileTab({ me, input }: { me: Account; input: string }) {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-extrabold">Profile Details</h2>
         {!editing && (
-          <button onClick={() => { setName(me.name); setEditing(true); }} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-xs font-bold active:scale-95">
+          <Button variant="ghost" onClick={() => { setName(me.name); setEditing(true); }} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-xs font-bold active:scale-95">
             <Pencil className="h-3 w-3" /> Edit
-          </button>
+          </Button>
         )}
       </div>
       <label className="mt-4 block text-xs font-bold">Poora naam</label>
@@ -298,8 +284,8 @@ function ProfileTab({ me, input }: { me: Account; input: string }) {
         <>
           <input value={name} onChange={(e) => setName(e.target.value)} className={input} maxLength={60} />
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <button onClick={save} className="rounded-xl bg-primary py-2.5 text-sm font-extrabold text-primary-foreground active:scale-95">Save</button>
-            <button onClick={() => setEditing(false)} className="rounded-xl bg-muted py-2.5 text-sm font-bold active:scale-95">Cancel</button>
+            <Button variant="ghost" onClick={save} className="rounded-xl bg-primary py-2.5 text-sm font-extrabold text-primary-foreground active:scale-95">Save</Button>
+            <Button variant="ghost" onClick={() => setEditing(false)} className="rounded-xl bg-muted py-2.5 text-sm font-bold active:scale-95">Cancel</Button>
           </div>
         </>
       ) : (
@@ -311,7 +297,6 @@ function ProfileTab({ me, input }: { me: Account; input: string }) {
       <p className="mt-1 rounded-xl bg-muted px-3 py-2.5 text-sm capitalize text-muted-foreground">
         {roleLabel(me.role)}
       </p>
-      <SocialLinksEditor me={me} />
     </div>
   );
 }
@@ -337,9 +322,9 @@ function AddressesTab({ me, input }: { me: Account; input: string }) {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-extrabold">Saved Addresses</h2>
         {!form && (
-          <button onClick={startAdd} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground active:scale-95">
+          <Button variant="ghost" onClick={startAdd} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground active:scale-95">
             <Plus className="h-3 w-3" /> Add
-          </button>
+          </Button>
         )}
       </div>
 
@@ -347,10 +332,10 @@ function AddressesTab({ me, input }: { me: Account; input: string }) {
         <div className="mt-3 rounded-2xl border p-3">
           <div className="flex gap-1.5">
             {["Home", "Office", "Other"].map((l) => (
-              <button key={l} onClick={() => setForm({ ...form, label: l })}
+              <Button variant="ghost" key={l} onClick={() => setForm({ ...form, label: l })}
                 className={`rounded-lg px-3 py-1.5 text-xs font-bold ${form.label === l ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                 {l}
-              </button>
+              </Button>
             ))}
           </div>
           <label className="mt-3 block text-xs font-bold">Poora address</label>
@@ -363,8 +348,8 @@ function AddressesTab({ me, input }: { me: Account; input: string }) {
             <input type="checkbox" checked={!!form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} /> Default address banaiye
           </label>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <button onClick={save} className="rounded-xl bg-primary py-2.5 text-sm font-extrabold text-primary-foreground active:scale-95">Save</button>
-            <button onClick={() => setForm(null)} className="rounded-xl bg-muted py-2.5 text-sm font-bold active:scale-95">Cancel</button>
+            <Button variant="ghost" onClick={save} className="rounded-xl bg-primary py-2.5 text-sm font-extrabold text-primary-foreground active:scale-95">Save</Button>
+            <Button variant="ghost" onClick={() => setForm(null)} className="rounded-xl bg-muted py-2.5 text-sm font-bold active:scale-95">Cancel</Button>
           </div>
         </div>
       )}
@@ -385,13 +370,13 @@ function AddressesTab({ me, input }: { me: Account; input: string }) {
               </p>
               <div className="flex gap-1">
                 {!a.isDefault && (
-                  <button onClick={() => { setDefaultAddress(me.id, a.id); toast.success("Default address badla"); }} title="Default banaiye"
-                    className="grid h-7 w-7 place-items-center rounded-lg bg-muted active:scale-95"><Star className="h-3.5 w-3.5" /></button>
+                  <Button variant="ghost" onClick={() => { setDefaultAddress(me.id, a.id); toast.success("Default address badla"); }} title="Default banaiye"
+                    className="grid h-7 w-7 place-items-center rounded-lg bg-muted active:scale-95"><Star className="h-3.5 w-3.5" /></Button>
                 )}
-                <button onClick={() => setForm({ ...a })} title="Edit"
-                  className="grid h-7 w-7 place-items-center rounded-lg bg-muted active:scale-95"><Pencil className="h-3.5 w-3.5" /></button>
-                <button onClick={() => { deleteAddress(me.id, a.id); toast.success("Address delete ho gaya"); }} title="Delete"
-                  className="grid h-7 w-7 place-items-center rounded-lg bg-muted text-destructive active:scale-95"><Trash2 className="h-3.5 w-3.5" /></button>
+                <Button variant="ghost" onClick={() => setForm({ ...a })} title="Edit"
+                  className="grid h-7 w-7 place-items-center rounded-lg bg-muted active:scale-95"><Pencil className="h-3.5 w-3.5" /></Button>
+                <Button variant="ghost" onClick={() => { deleteAddress(me.id, a.id); toast.success("Address delete ho gaya"); }} title="Delete"
+                  className="grid h-7 w-7 place-items-center rounded-lg bg-muted text-destructive active:scale-95"><Trash2 className="h-3.5 w-3.5" /></Button>
               </div>
             </div>
             <p className="mt-1.5 text-xs text-muted-foreground">{a.line}{a.landmark ? `, ${a.landmark}` : ""} — {a.pincode}</p>
@@ -425,9 +410,9 @@ function PasswordTab({ me, input }: { me: Account; input: string }) {
       <PasswordInput value={newPw} onChange={setNewPw} className={input} placeholder="Kam se kam 6 characters" />
       <label className="mt-3 block text-xs font-bold">Naya password dobara</label>
       <PasswordInput value={confirm} onChange={setConfirm} className={input} />
-      <button onClick={save} className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
+      <Button variant="ghost" onClick={save} className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-extrabold text-primary-foreground active:scale-95">
         Password Update Kariye
-      </button>
+      </Button>
     </div>
   );
 }
@@ -444,11 +429,11 @@ export function LanguagePicker({ onDone }: { onDone?: () => void }) {
       <p className="mt-1 text-xs text-muted-foreground">Settings → Language se baad me kabhi bhi badal sakte hain.</p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {opts.map((o) => (
-          <button key={o.l} type="button" onClick={() => { setLang(o.l); onDone?.(); }}
+          <Button variant="ghost" key={o.l} type="button" onClick={() => { setLang(o.l); onDone?.(); }}
             className={`rounded-2xl border-2 p-4 text-left active:scale-95 ${lang === o.l ? "border-primary bg-primary/10" : "border-border"}`}>
             <div className="text-xl font-extrabold">{o.title}</div>
             <div className="text-xs text-muted-foreground">{o.sub}</div>
-          </button>
+          </Button>
         ))}
       </div>
     </div>

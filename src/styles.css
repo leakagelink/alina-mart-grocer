@@ -338,3 +338,23 @@ input, textarea, [contenteditable="true"] {
   user-select: text;
   -webkit-touch-callout: default;
 }
+
+/* Account settings: quiet grouped rows and a grocery-inspired identity band. */
+:root {
+  --account-background: oklch(0.975 0.005 280);
+  --account-header: oklch(0.965 0.075 105);
+}
+.dark {
+  --account-background: var(--background);
+  --account-header: var(--accent);
+}
+.account-page { background: var(--account-background); }
+.account-topbar { background: var(--card); }
+.account-identity { background: linear-gradient(to bottom, var(--account-header), var(--account-background)); }
+.account-group { background: var(--card); border-radius: var(--radius); overflow: hidden; }
+.account-row { display: flex; width: 100%; min-height: 58px; height: auto; justify-content: flex-start; gap: 14px; padding: 16px; border-radius: 0; font-size: 14px; font-weight: 600; }
+.account-row + .account-row { border-top: 1px solid var(--border); }
+.account-shortcut, .account-group, .account-editor { animation: surface-in .3s ease-out both; }
+.account-editor { border-radius: var(--radius); }
+.account-editor > section:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.account-editor .rounded-2xl, .account-editor .rounded-xl { border-radius: var(--radius); }
